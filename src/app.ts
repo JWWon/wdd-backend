@@ -1,6 +1,5 @@
 import Koa from 'koa';
 import cors from '@koa/cors';
-import HttpStatus from 'http-status-codes';
 import compress from 'koa-compress';
 import respond from 'koa-respond';
 import bodyParser from 'koa-bodyparser';
