@@ -6,9 +6,9 @@
     "test": "cross-env NODE_ENV=test jest",
     "lint": "tslint --project tsconfig.json --format stylish",
     "build": "cross-env NODE_ENV=production tsc",
-    "serve": "ts-node src/server.ts",
+    "serve": "ts-node src/bin/www.ts",
     "dev": "npm run lint && nodemon",
-    "start": "node dist/server.js"
+    "start": "node dist/bin/www.js"
   },
   "author": "JWWon",
   "license": "ISC",

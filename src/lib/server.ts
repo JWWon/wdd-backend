@@ -4,8 +4,9 @@ import compress from 'koa-compress';
 import respond from 'koa-respond';
 import bodyParser from 'koa-bodyparser';
 
-import log from './lib/log';
-import { errorHandler } from './middleware/error-handler';
+import log from './log';
+import { errorHandler } from '../middleware/error-handler';
+import { notFoundHandler } from '../middleware/not-found-handler';
 
 export interface Context extends Koa.Context {
   send: (status: number, payload: string | object) => void;
@@ -29,7 +30,8 @@ export async function createServer() {
     .use(compress())
     .use(respond())
     .use(cors())
-    .use(bodyParser());
+    .use(bodyParser())
+    .use(notFoundHandler);
 
   // Initial route
   app.use(async (ctx: Context) => {
