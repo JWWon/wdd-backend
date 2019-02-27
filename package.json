@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "Backend for Oboon kickboard service",
   "scripts": {
-    "test": "jest",
+    "test": "cross-env NODE_ENV=test jest",
     "lint": "tslint --project tsconfig.json --format stylish",
     "build": "cross-env NODE_ENV=production tsc",
     "serve": "ts-node src/server.ts",
-    "dev": "nodemon",
+    "dev": "npm run lint && nodemon",
     "start": "node dist/server.js"
   },
   "author": "JWWon",
