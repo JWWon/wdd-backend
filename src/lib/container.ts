@@ -1,4 +1,9 @@
-import { createContainer, Lifetime, InjectionMode, asValue } from 'awilix';
+import {
+  asValue,
+  createContainer,
+  InjectionMode,
+  Lifetime
+  } from 'awilix';
 import log from './log';
 
 export function configureContainer() {

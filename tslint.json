@@ -2,6 +2,7 @@
   "extends": "tslint-config-airbnb",
   "rules": {
     "import-name": false,
-    "trailing-comma": false
+    "trailing-comma": false,
+    "ordered-imports": true
   }
 }

@@ -1,15 +1,15 @@
-import Koa from 'koa';
 import cors from '@koa/cors';
 import { AwilixContainer } from 'awilix';
-import { scopePerRequest, loadControllers } from 'awilix-koa';
+import { loadControllers, scopePerRequest } from 'awilix-koa';
+import Koa from 'koa';
+import bodyParser from 'koa-bodyparser';
 import compress from 'koa-compress';
 import respond from 'koa-respond';
-import bodyParser from 'koa-bodyparser';
-
-import log from './log';
-import { configureContainer } from './container';
+import mongoose from 'mongoose';
 import { errorHandler } from '../middleware/error-handler';
 import { notFoundHandler } from '../middleware/not-found-handler';
+import { configureContainer } from './container';
+import log from './log';
 
 export interface Context extends Koa.Context {
   send: (status: number, payload: string | object) => void;
@@ -31,6 +31,8 @@ interface AppInterface extends Koa {
 
 export async function createServer() {
   const app: AppInterface = new Koa();
+
+  // Connect MongoDB
 
   app.container = configureContainer();
   app
