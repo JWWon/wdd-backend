@@ -6,6 +6,7 @@ import bodyParser from 'koa-bodyparser';
 import compress from 'koa-compress';
 import respond from 'koa-respond';
 import mongoose from 'mongoose';
+import env from '../lib/env';
 import { errorHandler } from '../middleware/error-handler';
 import { notFoundHandler } from '../middleware/not-found-handler';
 import { configureContainer } from './container';
@@ -31,9 +32,19 @@ interface AppInterface extends Koa {
 
 export async function createServer() {
   const app: AppInterface = new Koa();
+  console.clear(); // Clear console once
 
   // Connect MongoDB
+  mongoose.connect(`mongodb://${env.DB_URL}/oboon`);
+  const db = mongoose.connection;
+  db.once('open', () => {
+    log.debug(`Database connected on ${env.DB_URL}`, { scope: 'mongoose' });
+  });
+  db.on('error', (e: object) => {
+    log.error('Database connection error', e);
+  });
 
+  // Create app
   app.container = configureContainer();
   app
     .use(errorHandler)
@@ -45,7 +56,6 @@ export async function createServer() {
     .use(loadControllers('../routes/*.ts', { cwd: __dirname }))
     .use(notFoundHandler);
 
-  console.clear();
   log.debug('Server created, ready to listen', { scope: 'startup' });
   return app;
 }
