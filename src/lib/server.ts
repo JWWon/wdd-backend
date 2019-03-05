@@ -35,10 +35,12 @@ export async function createServer() {
   console.clear(); // Clear console once
 
   // Connect MongoDB
-  mongoose.connect(`mongodb://${env.DB_URL}/oboon`);
+  mongoose.connect(`mongodb://${env.DB_URL}/oboon`, { useNewUrlParser: true });
   const db = mongoose.connection;
   db.once('open', () => {
-    log.debug(`Database connected on ${env.DB_URL}`, { scope: 'mongoose' });
+    if (env.LOG_LEVEL !== 'off') {
+      log.debug(`Database connected on ${env.DB_URL}`, { scope: 'mongoose' });
+    }
   });
   db.on('error', (e: object) => {
     log.error('Database connection error', e);
