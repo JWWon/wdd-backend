@@ -50,6 +50,7 @@ export function connectDB() {
   mongoose.connect(`mongodb://${env.DB_URL}/oboon`, {
     autoReconnect: true,
     useNewUrlParser: true,
+    useCreateIndex: true,
   });
 }
 

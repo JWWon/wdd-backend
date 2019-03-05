@@ -1,9 +1,4 @@
-import {
-  asValue,
-  createContainer,
-  InjectionMode,
-  Lifetime
-  } from 'awilix';
+import { asValue, createContainer, InjectionMode, Lifetime } from 'awilix';
 import log from './log';
 
 export function configureContainer() {
@@ -13,7 +8,7 @@ export function configureContainer() {
     injectionMode: InjectionMode.PROXY,
   };
   return createContainer(opts)
-    .loadModules(['models/*.js'], {
+    .loadModules(['models/*.ts'], {
       // `modulesToLoad` paths should be relative
       // to this file's parent directory.
       cwd: `${__dirname}/..`,

@@ -30,21 +30,19 @@ Koa.js + Typescript + MongoDB + Docker
 
 ```json
 {
-    "_id": ObjectId,
-    "status": "Active" | "Suspended",
+    "status": "ACTIVE" | "SUSPENDED",
     "session": Local | Google | Kakao,
-    "email": string,
+    "email": string, // unique
     "username": string,
-    "phone": string, // 010-XXXX-XXXX
-    "phone_serial": string, // bluetooth
+    "phone": string, // 010-XXXX-XXXX, index
     "payment": [{
         "card": string,
         "provider": string,
         "default": boolean,
     }],
-    "last_login": Date,
     "last_ride": ObjectId,
     "last_charge": ObjectId,
+    "last_login": Date,
     "created_at": Date,
 }
 ```
@@ -58,12 +56,12 @@ interface Local {
 interface Google {
     provider: 'google',
 	idToken: string,
-	accessToken: string
+	accessToken: string,
 }
     
 interface Kakao {
 	provider: 'kakao',
-	accessToken: string
+	accessToken: string,
 }
 ```
 
@@ -78,6 +76,10 @@ interface Kakao {
         "longitude": number,
     },
     "battery": number, // 0 - 100
+    "bluetooth": {
+        "identifier": string,
+        "uuid": string,
+    },
     "placement": ObjectId,
 }
 ```
@@ -129,3 +131,9 @@ interface Kakao {
 }
 ```
 
+### How It Works
+
+1. 지도에서 킥보드를 검색
+2. 킥보드 주변으로 이동 & 킥보드 대여 클릭
+3. 1분 내에 킥보드를 블루투스로 감지시 대여 시작
+4. 대여 종료 후 요금 결제
