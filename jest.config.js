@@ -4,6 +4,7 @@ module.exports = {
   collectCoverageFrom: [
     '**/*.{ts,js}',
     '!**/node_modules/**',
+    '!**/src/@types/**',
     '!**/build/**',
     '!**/coverage/**',
   ],
@@ -19,7 +20,14 @@ module.exports = {
     },
   },
   coverageReporters: ['text', 'text-summary'],
+  testEnvironment: 'node',
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.ts$',
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-  testPathIgnorePatterns: ['/node_modules/', '/build/', '/coverage/'],
+  testPathIgnorePatterns: [
+    'api-helper.ts',
+    '/node_modules/',
+    '/@types/',
+    '/build/',
+    '/coverage/',
+  ],
 };

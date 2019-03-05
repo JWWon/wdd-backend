@@ -30,21 +30,33 @@ interface AppInterface extends Koa {
   container?: AwilixContainer;
 }
 
+export function connectDB() {
+  if (env.LOG_LEVEL !== 'off') {
+    const mongo = mongoose.connection;
+    mongo.once('open', () => {
+      log.debug(`Database connected on ${env.DB_URL}`, { scope: 'mongoose' });
+    });
+    mongo.on('reconnected', () => {
+      log.debug(`Database reconnected on ${env.DB_URL}`, { scope: 'mongoose' });
+    });
+    mongo.on('close', () => {
+      log.debug('Database closed', { scope: 'mongoose' });
+    });
+    mongo.on('error', (error: object) => {
+      log.error('Database connection error', error);
+    });
+  }
+
+  mongoose.connect(`mongodb://${env.DB_URL}/oboon`, {
+    autoReconnect: true,
+    useNewUrlParser: true,
+  });
+}
+
 export async function createServer() {
   const app: AppInterface = new Koa();
-  console.clear(); // Clear console once
 
-  // Connect MongoDB
-  mongoose.connect(`mongodb://${env.DB_URL}/oboon`, { useNewUrlParser: true });
-  const db = mongoose.connection;
-  db.once('open', () => {
-    if (env.LOG_LEVEL !== 'off') {
-      log.debug(`Database connected on ${env.DB_URL}`, { scope: 'mongoose' });
-    }
-  });
-  db.on('error', (e: object) => {
-    log.error('Database connection error', e);
-  });
+  connectDB();
 
   // Create app
   app.container = configureContainer();
