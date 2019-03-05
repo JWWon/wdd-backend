@@ -71,7 +71,8 @@ interface Kakao {
 {
     "_id": ObjectId,
     "status": 'RUNNING' | 'WAITING' | 'CHARGING' | 'ERROR',
-    "location": {
+    "number_plate": string,
+    "position": {
         "latitude": number,
         "longitude": number,
     },
@@ -91,13 +92,14 @@ interface Kakao {
     "_id": ObjectId,
     "user": ObjectId,
     "kickboard": ObjectId,
-    "pinpoints": [{
+    "paths": [{
         "latitude": number,
         "longitude": number,
     }],
     "seconds": number, // riding time
     "distance": number, // km
     "created_at": Date,
+    "finished_at": Date,
 }
 ```
 
@@ -123,7 +125,7 @@ interface Kakao {
 {
     "_id": ObjectId,
     "name": string, // placement area (ex. 연세대학교, 고려대학교)
-    "pinpoints": [{
+    "boundaries": [{
         "latitude": number,
         "longitude": number,
     }],

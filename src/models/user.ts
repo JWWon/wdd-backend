@@ -60,7 +60,7 @@ const userSchema = new Schema({
   session: {
     type: Object,
     required: true,
-    validate: (value: object) => value.hasOwnProperty('provider'),
+    validate: (value: object) => 'provider' in value,
   },
   username: { type: String, trim: true },
   payment: [
