@@ -1,5 +1,6 @@
 import { Document, model, Schema } from 'mongoose';
-import { hasProperties, isEmailVaild } from '../lib/validate';
+import payment, { Payment } from '../lib/schema/payment';
+import { isEmailVaild } from '../lib/validate';
 
 // Session Interfaces
 interface Local {
@@ -16,13 +17,6 @@ interface Google {
 interface Kakao {
   provider: 'KAKAO';
   accessToken: string;
-}
-
-// Payment Interface
-interface Payment {
-  provider: string;
-  card: string;
-  default?: boolean;
 }
 
 export interface User extends Document {
@@ -63,13 +57,7 @@ const userSchema = new Schema({
     validate: (value: object) => 'provider' in value,
   },
   username: { type: String, trim: true },
-  payment: [
-    {
-      type: Object,
-      validate: (value: Payment) =>
-        hasProperties<Payment>(value, ['provider', 'card']),
-    },
-  ],
+  payments: [payment],
   last_ride: { type: Schema.Types.ObjectId, ref: 'Ride' },
   last_charge: { type: Schema.Types.ObjectId, ref: 'Charge' },
   last_login: { type: Date, default: Date.now },

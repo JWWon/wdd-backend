@@ -92,7 +92,7 @@ interface Kakao {
     "_id": ObjectId,
     "user": ObjectId,
     "kickboard": ObjectId,
-    "paths": [{
+    "pinpoints": [{
         "latitude": number,
         "longitude": number,
     }],
@@ -110,12 +110,17 @@ interface Kakao {
     "_id": ObjectId,
     "user": ObjectId,
     "kickboard": ObjectId,
-    "battery_level": {
+    "position": {
+        "latitude": number,
+        "longitude": number,       
+    },
+    "battery": {
 		"before": number, // 0 - 100
 		"after": number, // 0 - 100
     },
     "seconds": number, // charging time
     "created_at": Date,
+    "finished_at": Date,
 }
 ```
 

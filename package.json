@@ -1,6 +1,6 @@
 {
   "name": "oboon-backend",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Backend for Oboon kickboard service",
   "scripts": {
     "test": "npm run lint && cross-env NODE_ENV=test jest --detectOpenHandles",

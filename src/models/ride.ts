@@ -1,12 +1,11 @@
 import { Document, model, Schema } from 'mongoose';
-import { Position } from '../@types/local';
-import { hasProperties } from '../lib/validate';
+import position, { Position } from '../lib/schema/position';
 
 export interface Ride extends Document {
   _id: Schema.Types.ObjectId;
   user: string;
   kickboard: Schema.Types.ObjectId;
-  paths: Position[];
+  pinpoints: Position[];
   seconds: number;
   distance: number;
   created_at: Date;
@@ -14,17 +13,11 @@ export interface Ride extends Document {
 }
 
 const rideSchema = new Schema({
-  user: { type: String, required: true }, // FK
-  kickboard: { type: Schema.Types.ObjectId, required: true }, // FK
-  paths: [
-    {
-      type: Object,
-      validate: (value: Position) =>
-        hasProperties<Position>(value, ['latitude', 'longitude']),
-    },
-  ],
-  seconds: { type: Number, required: true, default: 0 },
-  distance: { type: Number, required: true, default: 0 },
+  user: { type: String, required: true, ref: 'User' }, // FK
+  kickboard: { type: Schema.Types.ObjectId, required: true, ref: 'Kickboard' }, // FK
+  pinpoints: [position],
+  seconds: { type: Number, min: 0, default: 0 },
+  distance: { type: Number, min: 0, default: 0 },
   created_at: { type: Date, default: Date.now },
   finished_at: Date,
 });
