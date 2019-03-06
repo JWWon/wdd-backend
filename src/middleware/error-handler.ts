@@ -1,7 +1,7 @@
 import HttpStatus from 'http-status-codes';
+import { Context } from '../interfaces/context';
 import env from '../lib/env';
 import log from '../lib/log';
-import { Context } from '../lib/server';
 
 export async function errorHandler(ctx: Context, next: any) {
   try {

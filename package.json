@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Backend for Oboon kickboard service",
   "scripts": {
-    "test": "npm run lint && cross-env NODE_ENV=test jest --detectOpenHandles",
+    "test": "clear && npm run lint && cross-env NODE_ENV=test jest --detectOpenHandles",
     "lint": "tslint --project tsconfig.json --format stylish",
     "build": "cross-env NODE_ENV=production tsc",
     "serve": "ts-node src/bin/www.ts",
