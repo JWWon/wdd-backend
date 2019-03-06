@@ -1,5 +1,5 @@
 import HttpStatus from 'http-status-codes';
-import { Context } from '../interfaces/context';
+import { Context } from 'koa-respond';
 import env from '../lib/env';
 import log from '../lib/log';
 

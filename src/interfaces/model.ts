@@ -1,13 +1,11 @@
-import { Charge } from '../models/charge';
-import { Kickboard } from '../models/kickboard';
-import { Placement } from '../models/placement';
-import { Ride } from '../models/ride';
-import { User } from '../models/user';
+import Dog from '../models/dog';
+import Feed from '../models/feed';
+import Place from '../models/place';
+import User from '../models/user';
 
 export interface Model {
-  Charge: Charge;
-  Kickboard: Kickboard;
-  Placement: Placement;
-  Ride: Ride;
-  User: User;
+  Dog: typeof Dog;
+  Place: typeof Place;
+  Feed: typeof Feed;
+  User: typeof User;
 }
