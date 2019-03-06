@@ -2,23 +2,22 @@ import AWS from 'aws-sdk';
 import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
-import { Context } from 'koa-respond';
 import { pick } from 'lodash';
 import { Schema } from 'mongoose';
 import nodemailer from 'nodemailer';
+import { Context } from '../interfaces/context';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
 import {
   arrayProp,
   instanceMethod,
-  ModelType,
   InstanceType,
+  ModelType,
   prop,
   staticMethod,
   Typegoose,
 } from 'typegoose';
-// import { Document, model, Schema } from 'mongoose';
 
 interface DogSummery {
   _id: Schema.Types.ObjectId;
@@ -46,7 +45,7 @@ interface Serialized {
   places?: PlaceSummery[];
 }
 
-class User extends Typegoose {
+export class User extends Typegoose {
   @prop({ required: true, unique: true, validate: isEmailVaild })
   email!: string; // unique
   @prop({ required: true })
@@ -69,7 +68,10 @@ class User extends Typegoose {
   places?: PlaceSummery[];
 
   @staticMethod
-  static async signIn(this: ModelType<User>, ctx: Context) {
+  static async signIn(
+    this: ModelType<User>,
+    ctx: Context<{ email: string; password: string }>
+  ) {
     const { body } = ctx.request;
     NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
     NotFound.assert(body.password, '파라미터에 비밀번호가 없습니다.');
@@ -81,12 +83,13 @@ class User extends Typegoose {
       );
       await user.updateLoginStamp();
       return user.serialize();
-    } else {
-      ctx.notFound('존재하지 않는 계정입니다.');
     }
   }
   @staticMethod
-  static async signUp(this: ModelType<User>, ctx: Context) {
+  static async signUp(
+    this: ModelType<User>,
+    ctx: Context<{ email: string; password: string; name: string }>
+  ) {
     const { body } = ctx.request;
     NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
     NotFound.assert(body.password, '파라미터에 비밀번호가 없습니다.');
@@ -100,7 +103,10 @@ class User extends Typegoose {
     return user.serialize();
   }
   @staticMethod
-  static async forgotPassword(this: ModelType<User>, ctx: Context) {
+  static async forgotPassword(
+    this: ModelType<User>,
+    ctx: Context<{ email: string }>
+  ) {
     const { body } = ctx.request;
     NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
     const user = await this.findOne({ email: body.email });
@@ -122,8 +128,6 @@ class User extends Typegoose {
         }">이메일 인증하기</a>`,
       });
       return serialized;
-    } else {
-      ctx.notFound('존재하지 않는 계정입니다.');
     }
   }
 
@@ -152,44 +156,37 @@ class User extends Typegoose {
     await this.save();
   }
   @instanceMethod
-  async update(this: InstanceType<User>, ctx: Context) {
-    const { body } = ctx.request;
-    if ('password' in body) {
-      this.password = await hash(body.password, 10);
-    }
-    const user = await this.save();
-    return user.serialize();
-  }
-  @instanceMethod
-  async updateDog(this: InstanceType<User>, dog: Dog) {
-    let index = -1;
+  async createDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['_id', 'name', 'thumbnail']);
     if (this.dogs) {
-      this.dogs.forEach((userDog, idx) => {
-        if (userDog._id === serialized._id) index = idx;
+      this.dogs = this.dogs.map(dog => ({ ...dog, default: false }));
+      this.dogs.push({
+        ...serialized,
+        default: true,
       });
-      if (index === -1) {
-        // create new column
-        for (let idx = 0; idx < this.dogs.length; idx += 1) {
-          this.dogs[idx].default = false;
+      const user = await this.save();
+      return user.serialize();
+    }
+  }
+  @instanceMethod
+  async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
+    const serialized = pick(dog, ['_id', 'name', 'thumbnail']);
+    if (this.dogs) {
+      for (let i = 0; i < this.dogs.length; i += 1) {
+        if (this.dogs[i]._id === serialized._id) {
+          this.dogs[i] = { ...this.dogs[i], ...serialized };
+          break;
         }
-        this.dogs.push({
-          ...serialized,
-          default: true,
-        });
-      } else {
-        // update exist column
-        this.dogs[index] = {
-          ...this.dogs[index],
-          ...serialized,
-        };
       }
       const user = await this.save();
       return user.serialize();
     }
   }
   @instanceMethod
-  async selectDog(this: InstanceType<User>, ctx: Context) {
+  async selectDog(
+    this: InstanceType<User>,
+    ctx: Context<{ dog_id: Schema.Types.ObjectId }>
+  ) {
     const { body } = ctx.request;
     if (this.dogs) {
       this.dogs = this.dogs.map(dog => ({
@@ -200,8 +197,19 @@ class User extends Typegoose {
       return user.serialize();
     }
   }
+  @instanceMethod
+  async deleteDog(
+    this: InstanceType<User>,
+    ctx: Context<{}, { _id: Schema.Types.ObjectId }>
+  ) {
+    if (this.dogs) {
+      this.dogs = this.dogs.filter(dog => dog._id !== ctx.params._id);
+      const user = await this.save();
+      return user.serialize();
+    }
+  }
 }
 
-const UserModel = new User().getModelForClass(User);
+const userModel = new User().getModelForClass(User);
 
-export default UserModel;
+export default userModel;
