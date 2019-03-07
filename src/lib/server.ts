@@ -56,7 +56,7 @@ export async function createServer() {
     .use(bodyParser())
     .use(tokenToUser)
     .use(scopePerRequest(app.container))
-    .use(loadControllers('../routes/*.ts', { cwd: __dirname }))
+    .use(loadControllers('../routes/*.{ts,js}', { cwd: __dirname }))
     .use(notFoundHandler);
 
   log.debug('Server created, ready to listen', { scope: 'startup' });

@@ -8,7 +8,7 @@ export function configureContainer() {
     injectionMode: InjectionMode.PROXY,
   };
   return createContainer(opts)
-    .loadModules(['models/*.ts'], {
+    .loadModules(['models/*.{ts,js}'], {
       // `modulesToLoad` paths should be relative
       // to this file's parent directory.
       cwd: `${__dirname}/..`,

@@ -5,10 +5,11 @@
   "scripts": {
     "test": "clear && npm run lint && cross-env NODE_ENV=test jest --detectOpenHandles",
     "lint": "tslint --project tsconfig.json --format stylish",
-    "build": "cross-env NODE_ENV=production tsc",
+    "build": "rm -rf dist && tsc -p .",
     "serve": "ts-node src/bin/www.ts",
     "dev": "nodemon",
-    "start": "node dist/bin/www.js"
+    "start:dev": "clear && node dist/bin/www.js",
+    "start": "cross-env NODE_ENV=production node dist/bin/www.js"
   },
   "author": "JWWon",
   "license": "ISC",
@@ -35,11 +36,11 @@
     "palin": "^2.2.0",
     "reflect-metadata": "^0.1.13",
     "typegoose": "^5.6.0",
-    "typeorm": "^0.2.14",
     "yenv": "^2.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/glob": "^7.1.1",
     "@types/http-status-codes": "^1.2.0",
     "@types/jest": "^24.0.9",
     "@types/jsonwebtoken": "^8.3.0",
