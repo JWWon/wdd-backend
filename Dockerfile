@@ -18,7 +18,6 @@ COPY . .
 
 # 서버 설정
 ENV NODE_ENV production
-ENV AWS_REGION ap-northeast-2
 EXPOSE 80
 
 RUN npm run build

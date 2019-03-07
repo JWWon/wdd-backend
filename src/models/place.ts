@@ -1,22 +1,43 @@
-import { Document, model, Schema } from 'mongoose';
+import { Schema } from 'mongoose';
+import {
+  arrayProp,
+  instanceMethod,
+  InstanceType,
+  ModelType,
+  prop,
+  staticMethod,
+  Typegoose,
+} from 'typegoose';
 
-export interface Place extends Document {
-  _id: Schema.Types.ObjectId;
-  name: string;
-  images: string[];
-  tags: string[];
+interface OfficeHour {
+  default: string;
+  weekend?: string;
+  dayoff?: string;
 }
 
-const placeSchema = new Schema({
-  ratingAvg: Number,
-  reviews: [{ type: String, ref: 'Review' }], // FK, list of Review
-  likes: [String], // emails
-  name: { type: String, index: true },
-  tags: [String],
-  address: { type: String, required: true },
-  images: [String],
-  officeHour: String,
-  phone: String,
-});
+interface Review {}
 
-export default model<Place>('Place', placeSchema);
+export class Place extends Typegoose {
+  @prop({ required: true })
+  name!: string;
+  @prop({ required: true })
+  address!: string; // Road Address
+  @prop({ min: 0, max: 5, default: 0 })
+  rating!: number;
+  @prop()
+  officeHour?: OfficeHour;
+  @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
+  contact?: string;
+  @arrayProp({ items: String })
+  images!: string[];
+  @arrayProp({ items: String })
+  tags!: string[];
+  @arrayProp({ items: String })
+  likes!: string[];
+  @arrayProp({ items: Object })
+  reviews!: Review[];
+}
+
+const placeModel = new Place().getModelForClass(Place);
+
+export default placeModel;
