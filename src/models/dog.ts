@@ -1,19 +1,11 @@
 import { NotFound } from 'fejl';
 import { Schema } from 'mongoose';
+import { arrayProp, ModelType, prop, staticMethod, Typegoose } from 'typegoose';
 import { Context } from '../interfaces/context';
-import { User } from './user';
-import {
-  arrayProp,
-  ModelType,
-  prop,
-  Ref,
-  staticMethod,
-  Typegoose,
-} from 'typegoose';
 
 export class Dog extends Typegoose {
-  @prop({ index: true, ref: 'User' })
-  user!: Ref<User>;
+  @prop({ index: true })
+  user!: string;
   @prop({ required: true })
   name!: string;
   @prop()
@@ -49,7 +41,6 @@ export class Dog extends Typegoose {
     NotFound.assert(body.gender, '파라미터에 성별이 없습니다');
     // add required params automatically
     body.user = ctx.user.email;
-
     const dog = await this.create(body);
     return dog;
   }

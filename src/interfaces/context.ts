@@ -7,8 +7,8 @@ interface Request<Body> extends Koa.Request {
   body: Body;
 }
 
-export interface Context<Body, Param = {}> extends Ctx {
+export interface Context<Body, Params = {}> extends Ctx {
   user: InstanceType<Model['User']>;
   request: Request<Body>;
-  params: Param;
+  params: Params;
 }

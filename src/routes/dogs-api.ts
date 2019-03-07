@@ -1,15 +1,16 @@
 import { createController } from 'awilix-koa';
 import { BadRequest } from 'fejl';
 import { Schema } from 'mongoose';
-import { InstanceType } from 'typegoose';
 import { Context } from '../interfaces/context';
 import { Model } from '../interfaces/model';
 import { checkAuth } from '../middleware/check-auth';
-import { Dog } from '../models/dog';
+import { Dog as Instance } from '../models/dog';
 
-type DogInstance = InstanceType<Dog>;
+interface Params {
+  _id: Schema.Types.ObjectId;
+}
 
-const getId = (ctx: Context<{}, { _id: Schema.Types.ObjectId }>) => {
+const getId = (ctx: Context<{}, Params>) => {
   BadRequest.assert(ctx.params._id, 'No id given');
   return { _id: ctx.params._id };
 };
@@ -22,22 +23,28 @@ const api = ({ Dog }: Model) => ({
     const dog = await Dog.createDog(ctx);
     const user = await ctx.user.createDog(dog);
     if (user) return ctx.created(dog);
-    return ctx.badRequest({ message: '사용자 업데이트에 실패했습니다.' });
+    return ctx.badRequest({ message: '댕댕이 생성에 실패하였습니다.' });
   },
   get: async (ctx: Parameters<typeof getId>[0]) => {
     const dog = await Dog.findOne(getId(ctx));
     if (dog) return ctx.ok(dog);
     return ctx.notFound('존재하지 않는 댕댕이입니다.');
   },
-  update: async (ctx: Context<DogInstance, { _id: Schema.Types.ObjectId }>) => {
-    const dog = await Dog.update(getId(ctx), ctx.request.body);
-    await ctx.user.updateDog(dog);
-    return ctx.ok(dog);
+  update: async (ctx: Context<Instance, Params>) => {
+    let dog = await Dog.findOne(getId(ctx));
+    if (dog) {
+      dog = Object.assign(dog, ctx.request.body);
+      await dog.save({ validateBeforeSave: true });
+      await ctx.user.updateDog(dog);
+      return ctx.ok(dog);
+    }
+    return ctx.notFound({ message: '댕댕이를 찾지 못했습니다.' });
   },
   delete: async (ctx: Parameters<typeof getId>[0]) => {
     // update user instance
+    const id = (getId(ctx) as any) as string;
     await Dog.remove(getId(ctx));
-    const user = await ctx.user.deleteDog(ctx);
+    const user = await ctx.user.deleteDog(id);
     if (user) return ctx.noContent({ message: '댕댕이 삭제에 성공했습니다.' });
     return ctx.badRequest({ message: '댕댕이 삭제에 실패했습니다' });
   },

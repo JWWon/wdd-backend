@@ -10,7 +10,6 @@ import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
 import {
-  arrayProp,
   instanceMethod,
   InstanceType,
   ModelType,
@@ -20,14 +19,12 @@ import {
 } from 'typegoose';
 
 interface DogSummery {
-  _id: Schema.Types.ObjectId;
   name: string;
   thumbnail?: string;
   default: boolean;
 }
 
 interface PlaceSummery {
-  _id: Schema.Types.ObjectId;
   name: string;
   thumbnail: string;
   review?: string;
@@ -41,8 +38,8 @@ interface Serialized {
   birth?: string;
   gender?: 'M' | 'F';
   lastLogin: Date;
-  dogs?: DogSummery[];
-  places?: PlaceSummery[];
+  dogs: { [id: string]: DogSummery };
+  places: { [id: string]: PlaceSummery };
 }
 
 export class User extends Typegoose {
@@ -62,10 +59,10 @@ export class User extends Typegoose {
   lastLogin!: Date;
   @prop({ default: Date.now })
   createdAt!: Date;
-  @arrayProp({ items: Object })
-  dogs?: DogSummery[];
-  @arrayProp({ items: Object })
-  places?: PlaceSummery[];
+  @prop({ default: {} })
+  dogs!: Serialized['dogs'];
+  @prop({ default: {} })
+  places!: Serialized['places'];
 
   @staticMethod
   static async signIn(
@@ -111,7 +108,7 @@ export class User extends Typegoose {
     NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
     const user = await this.findOne({ email: body.email });
     if (user) {
-      const serialized = user.serialize();
+      const serialized: Serialized = user.serialize();
       // send email
       const transporter = nodemailer.createTransport({
         SES: new AWS.SES({
@@ -147,7 +144,6 @@ export class User extends Typegoose {
       ]),
       token: jwt.sign(this.email, env.SECRET),
     };
-
     return serialized;
   }
   @instanceMethod
@@ -157,53 +153,34 @@ export class User extends Typegoose {
   }
   @instanceMethod
   async createDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
-    const serialized = pick(dog, ['_id', 'name', 'thumbnail']);
-    if (this.dogs) {
-      this.dogs = this.dogs.map(dog => ({ ...dog, default: false }));
-      this.dogs.push({
-        ...serialized,
-        default: true,
-      });
-      const user = await this.save();
-      return user.serialize();
-    }
+    const serialized = pick(dog, ['name', 'thumbnail']);
+    Object.keys(this.dogs).forEach(id => {
+      this.dogs[id].default = false;
+    });
+    this.dogs[dog._id] = { ...serialized, default: true };
+    const user = await this.save();
+    return user.serialize();
   }
   @instanceMethod
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
-    const serialized = pick(dog, ['_id', 'name', 'thumbnail']);
-    if (this.dogs) {
-      for (let i = 0; i < this.dogs.length; i += 1) {
-        if (this.dogs[i]._id === serialized._id) {
-          this.dogs[i] = { ...this.dogs[i], ...serialized };
-          break;
-        }
-      }
-      const user = await this.save();
-      return user.serialize();
-    }
+    const serialized = pick(dog, ['name', 'thumbnail']);
+    this.dogs[dog._id] = { ...this.dogs[dog._id], ...serialized };
+    const user = await this.save();
+    return user.serialize();
   }
   @instanceMethod
-  async selectDog(
-    this: InstanceType<User>,
-    ctx: Context<{ dog_id: Schema.Types.ObjectId }>
-  ) {
+  async selectDog(this: InstanceType<User>, ctx: Context<{ dog_id: string }>) {
     const { body } = ctx.request;
-    if (this.dogs) {
-      this.dogs = this.dogs.map(dog => ({
-        ...dog,
-        default: body.dog_id === dog._id,
-      }));
-      const user = await this.save();
-      return user.serialize();
-    }
+    Object.keys(this.dogs).forEach(id => {
+      this.dogs[id] = { ...this.dogs[id], default: body.dog_id === id };
+    });
+    const user = await this.save();
+    return user.serialize();
   }
   @instanceMethod
-  async deleteDog(
-    this: InstanceType<User>,
-    ctx: Context<{}, { _id: Schema.Types.ObjectId }>
-  ) {
+  async deleteDog(this: InstanceType<User>, id: string) {
     if (this.dogs) {
-      this.dogs = this.dogs.filter(dog => dog._id !== ctx.params._id);
+      delete this.dogs[id];
       const user = await this.save();
       return user.serialize();
     }

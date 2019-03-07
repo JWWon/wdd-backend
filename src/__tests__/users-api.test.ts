@@ -1,11 +1,16 @@
+import { pick, sample } from 'lodash';
 import request from 'supertest';
 import log from '../lib/log';
 import User from '../models/user';
 import { server } from './api-helper';
 
 const userInfo = {
-  email: 'wonjiwn@naver.com',
-  password: 'dnjswldns96',
+  email: `${sample(['skywrace', 'example', 'lalala'])}@${sample([
+    'naver.com',
+    'gmail.com',
+    'daum.net',
+  ])}`,
+  password: sample(['thisispassword', 'hellomyoldspo']),
   name: '원지운',
 };
 
@@ -24,7 +29,7 @@ describe('POST /signup', () => {
       .send(userInfo);
 
     expect(res.body).toEqual(
-      expect.objectContaining({ email: userInfo.email, name: userInfo.name })
+      expect.objectContaining(pick(userInfo, ['email', 'name']))
     );
     expect(res.status).toBe(201);
   });
@@ -36,7 +41,7 @@ describe('POST /signin', () => {
     const res = await request(app.callback())
       .post('/signin')
       .send({ email: 'wrong@email.com', password: 'thisiswrong' });
-    expect(res.status).toBe(404); // NonFound
+    expect(res.status).toBe(404); // NotFound
   });
 
   it('should get NotAuthenticated with wrong password', async () => {
