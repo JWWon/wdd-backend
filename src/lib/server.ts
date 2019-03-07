@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import env from '../lib/env';
 import { errorHandler } from '../middleware/error-handler';
 import { notFoundHandler } from '../middleware/not-found-handler';
+import { tokenToUser } from '../middleware/token-to-user';
 import { configureContainer } from './container';
 import log from './log';
 
@@ -53,6 +54,7 @@ export async function createServer() {
     .use(respond())
     .use(cors())
     .use(bodyParser())
+    .use(tokenToUser)
     .use(scopePerRequest(app.container))
     .use(loadControllers('../routes/*.ts', { cwd: __dirname }))
     .use(notFoundHandler);
