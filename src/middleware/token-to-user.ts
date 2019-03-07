@@ -31,6 +31,8 @@ export const tokenToUser = async (ctx: Context, next: any) => {
     if (!env.EMIT_STACK_TRACE) {
       delete ctx.body.stack;
     }
-    log.error('Error in request', err);
+    log.error(`[status ${ctx.status}] ${err.message}`, {
+      scope: 'request',
+    });
   }
 };

@@ -1,12 +1,9 @@
 import { createController } from 'awilix-koa';
 import { hash } from 'bcrypt';
-import { InstanceType } from 'typegoose';
 import { Context } from '../interfaces/context';
 import { Model } from '../interfaces/model';
 import { checkAuth } from '../middleware/check-auth';
 import { User as Instance } from '../models/user';
-
-type UserInstance = InstanceType<Instance>;
 
 const api = ({ User }: Model) => ({
   signIn: async (ctx: Parameters<typeof User.signIn>[0]) => {
@@ -26,19 +23,21 @@ const api = ({ User }: Model) => ({
     await ctx.user.updateLoginStamp();
     return ctx.ok(ctx.user.serialize());
   },
-  update: async (ctx: Context<UserInstance>) => {
+  update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     if ('password' in body) body.password = await hash(body.password, 10);
-    const user = await User.update({ email: ctx.user.email }, body);
-    return ctx.ok(await user.serialize());
+    ctx.user = Object.assign(ctx.user, body);
+    await ctx.user.save({ validateBeforeSave: true });
+    return ctx.ok(await ctx.user.serialize());
   },
-  selectDog: async (ctx: Parameters<UserInstance['selectDog']>[0]) => {
+  selectDog: async (ctx: Parameters<Instance['selectDog']>[0]) => {
     const user = await ctx.user.selectDog(ctx);
     if (user) return ctx.ok(user);
     return ctx.notFound({ message: '존재하지 않는 댕댕이입니다' });
   },
   delete: async (ctx: Context<{}>) => {
-    await ctx.user.update({ status: 'TERMINATED' });
+    ctx.user.status = 'TERMINATED';
+    await ctx.user.save({ validateBeforeSave: true });
     return ctx.noContent({ message: 'USER TERMINATED' });
   },
 });
