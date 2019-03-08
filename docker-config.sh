@@ -1,0 +1,1 @@
+aws ecr get-login --region ap-northeast-2

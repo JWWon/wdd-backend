@@ -14,11 +14,13 @@ backend project for `우리동네댕댕이` outsource project
 
 4. `aws configure`, aws account profile is 'default'
 
-5. `chmod +x ./docker-build.sh`
+5. `chmod +x ./docker-config.sh`
 
-6. `./docker-build.sh`
+6. `./docker-config.sh`
 
-7. `docker start {wdd-backend-container-id}`
+7. `docker-compose build`
+
+8. `docker-compose up -d`
 
 ## API
 
@@ -30,7 +32,7 @@ header
 
 ```javascript
 {
-  authorization: token
+  authorization: token;
 }
 ```
 

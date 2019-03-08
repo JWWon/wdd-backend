@@ -2,9 +2,9 @@ import log from 'bristol';
 import palin from 'palin';
 
 /* istanbul ignore next */
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
   log.addTarget('console').withFormatter(palin, {
-    rootFolderName: 'oboon-backend', // Edit this to match your actual foldername
+    rootFolderName: 'wdd-backend', // Edit this to match your actual foldername
   });
 }
 
