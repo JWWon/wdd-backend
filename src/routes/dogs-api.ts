@@ -12,12 +12,12 @@ interface Params {
 
 const getId = (ctx: Context<{}, Params>) => {
   BadRequest.assert(ctx.params._id, 'No id given');
-  return { _id: ctx.params._id };
+  return ctx.params._id;
 };
 
 const api = ({ Dog }: Model) => ({
   getAll: async (ctx: Context<{}>) => {
-    return ctx.ok(await Dog.find({ user: ctx.user.email }));
+    return ctx.ok(await Dog.find({ user: ctx.user._id }));
   },
   create: async (ctx: Parameters<typeof Dog.createDog>[0]) => {
     const dog = await Dog.createDog(ctx);
@@ -26,12 +26,12 @@ const api = ({ Dog }: Model) => ({
     return ctx.badRequest({ message: '댕댕이 생성에 실패하였습니다.' });
   },
   get: async (ctx: Parameters<typeof getId>[0]) => {
-    const dog = await Dog.findOne(getId(ctx));
+    const dog = await Dog.findById(getId(ctx));
     if (dog) return ctx.ok(dog);
     return ctx.notFound('존재하지 않는 댕댕이입니다.');
   },
   update: async (ctx: Context<Instance, Params>) => {
-    let dog = await Dog.findOne(getId(ctx));
+    let dog = await Dog.findById(getId(ctx));
     if (dog) {
       dog = Object.assign(dog, ctx.request.body);
       await dog.save({ validateBeforeSave: true });

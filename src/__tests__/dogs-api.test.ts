@@ -13,7 +13,6 @@ const dogInfo = {
   name: sample(['단비', '설이', '일구', '팔육', '초롱이']),
   breed: '푸들',
   gender: 'M',
-  user: 'wonjiwn@naver.com',
 };
 
 beforeAll(async () => {
@@ -57,6 +56,27 @@ describe('POST /dogs', () => {
     expect(res.body.dogs[Object.keys(res.body.dogs)[0]]).toEqual(
       expect.objectContaining({ name: dogInfo.name, default: true })
     );
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('GET /dogs', () => {
+  let token: string = '';
+  it('should get token from User', async () => {
+    const app = server.getInstance();
+    const resUser = await request(app.callback())
+      .post('/signin')
+      .send(userInfo);
+    expect(resUser.status).toBe(200);
+    token = resUser.body.token;
+  });
+
+  it('should get all dogs successfully', async () => {
+    const app = server.getInstance();
+    const res = await request(app.callback())
+      .get('/dogs')
+      .set('authorization', token);
+    expect(res.body[0]).toEqual(expect.objectContaining(dogInfo));
     expect(res.status).toBe(200);
   });
 });

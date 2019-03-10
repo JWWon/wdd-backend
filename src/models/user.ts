@@ -3,7 +3,6 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
-import { Schema } from 'mongoose';
 import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import env from '../lib/env';
@@ -133,6 +132,7 @@ export class User extends Typegoose {
     // generate token
     const serialized: Serialized = {
       ...pick(this, [
+        '_id',
         'email',
         'status',
         'name',
@@ -142,7 +142,7 @@ export class User extends Typegoose {
         'dogs',
         'places',
       ]),
-      token: jwt.sign(this.email, env.SECRET),
+      token: jwt.sign(pick(this, ['_id', 'email']), env.SECRET),
     };
     return serialized;
   }

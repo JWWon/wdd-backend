@@ -1,6 +1,7 @@
 import { Forbidden, NotAcceptable } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { Context } from 'koa-respond';
+import { Schema } from 'mongoose';
 import env from '../lib/env';
 import log from '../lib/log';
 import User from '../models/user';
@@ -10,8 +11,11 @@ export const tokenToUser = async (ctx: Context, next: any) => {
     const headers = ctx.request.headers;
     const token = headers && headers.authorization;
     if (token) {
-      const email = jwt.verify(token, env.SECRET);
-      ctx.user = await User.findOne({ email });
+      const { _id } = jwt.verify(token, env.SECRET) as {
+        _id: Schema.Types.ObjectId;
+        email: string;
+      };
+      ctx.user = await User.findById(_id);
 
       Forbidden.assert(ctx.user, '유효하지 않은 토큰입니다.');
       NotAcceptable.assert(
