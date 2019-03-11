@@ -3,7 +3,7 @@ import { BadRequest } from 'fejl';
 import { Schema } from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model } from '../interfaces/model';
-import { checkAuth } from '../middleware/check-auth';
+import { loadUser } from '../middleware/load-user';
 import { Dog as Instance } from '../models/dog';
 
 interface Params {
@@ -52,7 +52,7 @@ const api = ({ Dog }: Model) => ({
 
 export default createController(api)
   .prefix('/dogs')
-  .before([checkAuth])
+  .before([loadUser])
   .get('', 'getAll')
   .post('', 'create')
   .get('/:id', 'get')

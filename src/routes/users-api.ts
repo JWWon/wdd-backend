@@ -2,7 +2,7 @@ import { createController } from 'awilix-koa';
 import { hash } from 'bcrypt';
 import { Context } from '../interfaces/context';
 import { Model } from '../interfaces/model';
-import { checkAuth } from '../middleware/check-auth';
+import { loadUser } from '../middleware/load-user';
 import { User as Instance } from '../models/user';
 
 const api = ({ User }: Model) => ({
@@ -46,7 +46,7 @@ export default createController(api)
   .post('/signin', 'signIn')
   .post('/signup', 'signUp')
   .post('/forgot-password', 'forgotPassword')
-  .get('/user', 'get', { before: [checkAuth] })
-  .patch('/user', 'update', { before: [checkAuth] })
-  .patch('/user/dog', 'selectDog', { before: [checkAuth] })
-  .delete('/user', 'delete', { before: [checkAuth] });
+  .get('/user', 'get', { before: [loadUser] })
+  .patch('/user', 'update', { before: [loadUser] })
+  .patch('/user/dog', 'selectDog', { before: [loadUser] })
+  .delete('/user', 'delete', { before: [loadUser] });

@@ -8,8 +8,8 @@ import respond from 'koa-respond';
 import mongoose from 'mongoose';
 import env from '../lib/env';
 import { errorHandler } from '../middleware/error-handler';
+import { loadUser } from '../middleware/load-user';
 import { notFoundHandler } from '../middleware/not-found-handler';
-import { tokenToUser } from '../middleware/token-to-user';
 import { configureContainer } from './container';
 import log from './log';
 
@@ -54,7 +54,6 @@ export async function createServer() {
     .use(respond())
     .use(cors())
     .use(bodyParser())
-    .use(tokenToUser)
     .use(scopePerRequest(app.container))
     .use(loadControllers('../routes/*.{ts,js}', { cwd: __dirname }))
     .use(notFoundHandler);
