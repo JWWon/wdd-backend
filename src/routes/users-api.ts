@@ -1,25 +1,57 @@
 import { createController } from 'awilix-koa';
+import AWS from 'aws-sdk';
 import { hash } from 'bcrypt';
+import { NotFound } from 'fejl';
+import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import { Model } from '../interfaces/model';
+import { hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
-import { User as Instance } from '../models/user';
+import { hashPassword, User as Instance } from '../models/user';
 
 const api = ({ User }: Model) => ({
-  signIn: async (ctx: Parameters<typeof User.signIn>[0]) => {
-    const user = await User.signIn(ctx);
-    if (user) return ctx.ok(user);
-    return ctx.notFound({ message: '존재하지 않는 계정입니다.' });
+  signIn: async (ctx: Context<{ email: string; password: string }>) => {
+    const { body } = ctx.request;
+    hasParams(['email', 'password'], body);
+    const user = await User.findByEmail(body.email);
+    if (!user) return;
+
+    await user.checkPassword(body.password);
+    await user.updateLoginStamp();
+    return ctx.ok(user.serialize());
   },
-  signUp: async (ctx: Parameters<typeof User.signUp>[0]) => {
-    return ctx.created(await User.signUp(ctx));
+  signUp: async (
+    ctx: Context<{ email: string; password: string; name: string }>
+  ) => {
+    const { body } = ctx.request;
+    hasParams(['email', 'password', 'name'], body);
+    await User.checkUserExist(body);
+    body.password = await hashPassword(body.password);
+    const user = await User.create(body);
+    return ctx.created(user.serialize());
   },
-  forgotPassword: async (ctx: Parameters<typeof User.forgotPassword>[0]) => {
-    const user = await User.forgotPassword(ctx);
-    if (user) return ctx.ok(user);
-    return ctx.notFound({ message: '존재하지 않는 계정입니다.' });
+  forgotPassword: async (ctx: Context<{ email: string }>) => {
+    const { body } = ctx.request;
+    hasParams(['email'], body);
+    const user = await User.findByEmail(body.email);
+    if (!user) return;
+
+    const { token, email } = user.serialize();
+    const transporter = nodemailer.createTransport({
+      SES: new AWS.SES({
+        apiVersion: '2012-10-17',
+        region: 'us-west-2',
+      }),
+    });
+    await transporter.sendMail({
+      from: 'no-reply@woodongdang.com',
+      to: email,
+      subject: '[우리동네댕댕이] 비밀번호 변경을 위해 이메일을 확인해주세요',
+      html: `<a href="woodongdang://session/forgot-password/change-password/${token}">이메일 인증하기</a>`,
+    });
+    return ctx.ok({ email });
   },
-  get: async (ctx: Context<{}>) => {
+  get: async (ctx: Context<null>) => {
     await ctx.user.updateLoginStamp();
     return ctx.ok(ctx.user.serialize());
   },
@@ -30,12 +62,20 @@ const api = ({ User }: Model) => ({
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await ctx.user.serialize());
   },
-  selectDog: async (ctx: Parameters<Instance['selectDog']>[0]) => {
-    const user = await ctx.user.selectDog(ctx);
-    if (user) return ctx.ok(user);
-    return ctx.notFound({ message: '존재하지 않는 댕댕이입니다' });
+  selectDog: async (ctx: Context<{ dog_id: string }>) => {
+    const { body } = ctx.request;
+    hasParams(['dog_id'], body);
+    let foundDog: boolean = false;
+    for (const id in ctx.user.dogs) {
+      const selectThis: boolean = body.dog_id === id;
+      if (selectThis) foundDog = true;
+      ctx.user.dogs[id] = { ...ctx.user.dogs[id], default: selectThis };
+    }
+    NotFound.assert(foundDog, '댕댕이를 찾을 수 없습니다.');
+    await ctx.user.save({ validateBeforeSave: true });
+    return ctx.ok(await ctx.user.serialize());
   },
-  delete: async (ctx: Context<{}>) => {
+  delete: async (ctx: Context<null>) => {
     ctx.user.status = 'TERMINATED';
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.noContent({ message: 'USER TERMINATED' });

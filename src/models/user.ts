@@ -1,9 +1,7 @@
-import AWS from 'aws-sdk';
 import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
-import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
@@ -41,6 +39,10 @@ interface Serialized {
   places: { [id: string]: PlaceSummery };
 }
 
+export async function hashPassword(password: string) {
+  return await hash(password, 10);
+}
+
 export class User extends Typegoose {
   @prop({ required: true, unique: true, validate: isEmailVaild })
   email!: string; // unique
@@ -64,69 +66,18 @@ export class User extends Typegoose {
   places!: Serialized['places'];
 
   @staticMethod
-  static async signIn(
+  static async checkUserExist(
     this: ModelType<User>,
-    ctx: Context<{ email: string; password: string }>
+    { email }: { email: string; [key: string]: any }
   ) {
-    const { body } = ctx.request;
-    NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
-    NotFound.assert(body.password, '파라미터에 비밀번호가 없습니다.');
-    const user = await this.findOne({ email: body.email });
-    if (user) {
-      NotAuthenticated.assert(
-        await compare(body.password, user.password),
-        '잘못된 비밀번호입니다.'
-      );
-      await user.updateLoginStamp();
-      return user.serialize();
-    }
+    const user = await this.findOne({ email });
+    Forbidden.assert(!user, '이미 존재하는 계정입니다.');
   }
   @staticMethod
-  static async signUp(
-    this: ModelType<User>,
-    ctx: Context<{ email: string; password: string; name: string }>
-  ) {
-    const { body } = ctx.request;
-    NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
-    NotFound.assert(body.password, '파라미터에 비밀번호가 없습니다.');
-    NotFound.assert(body.name, '파라미터에 이름이 없습니다.');
-    Forbidden.assert(
-      !(await this.findOne({ email: body.email })),
-      '이미 존재하는 계정입니다.'
-    );
-    const hashed = await hash(body.password, 10);
-    body.password = hashed;
-    const user = await this.create(body);
-    // *** lastLogin is not created when first login
-    return user.serialize();
-  }
-  @staticMethod
-  static async forgotPassword(
-    this: ModelType<User>,
-    ctx: Context<{ email: string }>
-  ) {
-    const { body } = ctx.request;
-    NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
-    const user = await this.findOne({ email: body.email });
-    if (user) {
-      const serialized: Serialized = user.serialize();
-      // send email
-      const transporter = nodemailer.createTransport({
-        SES: new AWS.SES({
-          apiVersion: '2012-10-17',
-          region: 'us-west-2',
-        }),
-      });
-      await transporter.sendMail({
-        from: 'no-reply@woodongdang.com',
-        to: user.email,
-        subject: '[우리동네댕댕이] 비밀번호 변경을 위해 이메일을 확인해주세요',
-        html: `<a href="woodongdang://session/forgot-password/change-password/${
-          serialized.token
-        }">이메일 인증하기</a>`,
-      });
-      return serialized;
-    }
+  static async findByEmail(this: ModelType<User>, email: string) {
+    const user = await this.findOne({ email });
+    NotFound.assert(user, '존재하지 않는 계정입니다.');
+    return user;
   }
 
   @instanceMethod
@@ -154,11 +105,18 @@ export class User extends Typegoose {
     await this.save();
   }
   @instanceMethod
+  async checkPassword(this: InstanceType<User>, password: string) {
+    NotAuthenticated.assert(
+      await compare(password, this.password),
+      '잘못된 비밀번호입니다.'
+    );
+  }
+  @instanceMethod
   async createDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['name', 'thumbnail']);
-    Object.keys(this.dogs).forEach(id => {
+    for (const id in this.dogs) {
       this.dogs[id].default = false;
-    });
+    }
     this.dogs[dog._id] = { ...serialized, default: true };
     const user = await this.save();
     return user.serialize();
@@ -167,15 +125,6 @@ export class User extends Typegoose {
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['name', 'thumbnail']);
     this.dogs[dog._id] = { ...this.dogs[dog._id], ...serialized };
-    const user = await this.save();
-    return user.serialize();
-  }
-  @instanceMethod
-  async selectDog(this: InstanceType<User>, ctx: Context<{ dog_id: string }>) {
-    const { body } = ctx.request;
-    Object.keys(this.dogs).forEach(id => {
-      this.dogs[id] = { ...this.dogs[id], default: body.dog_id === id };
-    });
     const user = await this.save();
     return user.serialize();
   }
