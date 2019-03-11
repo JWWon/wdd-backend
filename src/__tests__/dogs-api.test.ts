@@ -4,15 +4,18 @@ import log from '../lib/log';
 import Dog from '../models/dog';
 import { server } from './api-helper';
 
-const userInfo = {
+let sampleUser: any = {
   email: 'wonjiwn@naver.com',
   password: 'dnjswldns96',
+  // token: string
 };
 
-const dogInfo = {
+let sampleDog: any = {
   name: sample(['단비', '설이', '일구', '팔육', '초롱이']),
   breed: '푸들',
   gender: 'M',
+  // _id: Schema.Types.ObjectId
+  // user: Schema.Types.ObjectId
 };
 
 beforeAll(async () => {
@@ -23,60 +26,67 @@ beforeAll(async () => {
 });
 
 describe('POST /dogs', () => {
-  let token: string = '';
   it('should get token from User', async () => {
     const app = server.getInstance();
-    const resUser = await request(app.callback())
+    const resSignIn = await request(app.callback())
       .post('/signin')
-      .send(userInfo);
-    if (resUser.status === 200) {
-      token = resUser.body.token;
+      .send(sampleUser);
+    if (resSignIn.status === 200) {
+      sampleUser = resSignIn.body;
     } else {
-      const createUser = await request(app.callback())
+      const resSignUp = await request(app.callback())
         .post('/signup')
-        .send({ ...userInfo, name: '원지운' });
-      expect(createUser.status).toBe(201);
-      token = createUser.body.token;
+        .send({ ...sampleUser, name: '원지운' });
+      expect(resSignUp.status).toBe(201);
+      sampleUser = resSignUp.body;
     }
   });
 
   it('should create dog successfully', async () => {
     const app = server.getInstance();
     // Create Dog
-    const resDog = await request(app.callback())
+    const resCreate = await request(app.callback())
       .post('/dogs')
-      .set('authorization', token)
-      .send(dogInfo);
-    expect(resDog.body).toEqual(expect.objectContaining(dogInfo));
-    expect(resDog.status).toBe(201);
+      .set('authorization', sampleUser.token)
+      .send(sampleDog);
+    expect(resCreate.body).toEqual(expect.objectContaining(sampleDog));
+    expect(resCreate.status).toBe(201);
+    sampleDog = resCreate.body;
+
     // Check User
     const res = await request(app.callback())
       .get('/user')
-      .set('authorization', token);
+      .set('authorization', sampleUser.token);
     expect(res.body.dogs[Object.keys(res.body.dogs)[0]]).toEqual(
-      expect.objectContaining({ name: dogInfo.name, default: true })
+      expect.objectContaining({ name: sampleDog.name, default: true })
     );
     expect(res.status).toBe(200);
   });
 });
 
 describe('GET /dogs', () => {
-  let token: string = '';
-  it('should get token from User', async () => {
-    const app = server.getInstance();
-    const resUser = await request(app.callback())
-      .post('/signin')
-      .send(userInfo);
-    expect(resUser.status).toBe(200);
-    token = resUser.body.token;
-  });
-
   it('should get all dogs successfully', async () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .get('/dogs')
-      .set('authorization', token);
-    expect(res.body[0]).toEqual(expect.objectContaining(dogInfo));
+      .set('authorization', sampleUser.token);
+    expect(res.body).toEqual(expect.arrayContaining([sampleDog]));
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('PATCH /dogs/:id', () => {
+  it('should update dog successfully', async () => {
+    const app = server.getInstance();
+    const updateData = {
+      thumbnail: 'https://www.example.com/image.png',
+      name: '테스트 댕댕이',
+    };
+    const res = await request(app.callback())
+      .patch(`/dogs/${sampleDog._id}`)
+      .set('authorization', sampleUser.token)
+      .send(updateData);
+    expect(res.body).toEqual(expect.objectContaining(updateData));
     expect(res.status).toBe(200);
   });
 });

@@ -1,7 +1,7 @@
 import { NotFound } from 'fejl';
 import { Schema } from 'mongoose';
 import { arrayProp, ModelType, prop, staticMethod, Typegoose } from 'typegoose';
-import { Context } from '../interfaces/context';
+import { hasParams } from '../lib/check-params';
 
 export class Dog extends Typegoose {
   @prop({ index: true, ref: 'User' })
@@ -26,23 +26,10 @@ export class Dog extends Typegoose {
   likes?: Schema.Types.ObjectId[];
 
   @staticMethod
-  static async createDog(
-    this: ModelType<Dog>,
-    ctx: Context<{
-      name: string;
-      breed: string;
-      gender: 'M' | 'F' | 'N';
-      thumbnail?: string;
-      user?: string;
-    }>
-  ) {
-    const { body } = ctx.request;
-    NotFound.assert(body.name, '파라미터에 이름이 없습니다');
-    NotFound.assert(body.breed, '파라미터에 품종이 없습니다');
-    NotFound.assert(body.gender, '파라미터에 성별이 없습니다');
-    // add required params automatically
-    body.user = ctx.user._id;
-    const dog = await this.create(body);
+  static async findByParams(this: ModelType<Dog>, params: { id: string }) {
+    hasParams(['id'], params);
+    const dog = await this.findById(params.id);
+    NotFound.assert(dog, '댕댕이를 찾을 수 없습니다.');
     return dog;
   }
 }

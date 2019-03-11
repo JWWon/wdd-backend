@@ -58,8 +58,7 @@ const api = ({ User }: Model) => ({
   update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     if ('password' in body) body.password = await hash(body.password, 10);
-    ctx.user = Object.assign(ctx.user, body);
-    await ctx.user.save({ validateBeforeSave: true });
+    ctx.user = await ctx.user.update(body, { new: true });
     return ctx.ok(await ctx.user.serialize());
   },
   selectDog: async (ctx: Context<{ dog_id: string }>) => {
@@ -78,7 +77,7 @@ const api = ({ User }: Model) => ({
   delete: async (ctx: Context<null>) => {
     ctx.user.status = 'TERMINATED';
     await ctx.user.save({ validateBeforeSave: true });
-    return ctx.noContent({ message: 'USER TERMINATED' });
+    return ctx.noContent({ message: 'User Terminated' });
   },
 });
 

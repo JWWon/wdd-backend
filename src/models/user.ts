@@ -2,7 +2,6 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
-import { Context } from '../interfaces/context';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
@@ -118,21 +117,25 @@ export class User extends Typegoose {
       this.dogs[id].default = false;
     }
     this.dogs[dog._id] = { ...serialized, default: true };
-    const user = await this.save();
-    return user.serialize();
+    await this.update({ dogs: this.dogs }, { new: true });
+    return this.serialize();
   }
   @instanceMethod
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['name', 'thumbnail']);
-    this.dogs[dog._id] = { ...this.dogs[dog._id], ...serialized };
-    const user = await this.save();
-    return user.serialize();
+    await this.update(
+      {
+        [`dogs.${dog._id}`]: { ...this.dogs[dog._id], ...serialized },
+      },
+      { new: true, overwrite: true }
+    );
+    return this.serialize();
   }
   @instanceMethod
   async deleteDog(this: InstanceType<User>, id: string) {
     if (this.dogs) {
       delete this.dogs[id];
-      const user = await this.save();
+      const user = await this.save({ validateBeforeSave: true });
       return user.serialize();
     }
   }
