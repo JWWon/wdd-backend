@@ -1,4 +1,4 @@
-import { Context } from 'koa-respond';
+import { Context } from '../interfaces/context';
 
 export async function notFoundHandler(ctx: Context) {
   const msg = `${ctx.request.method} ${ctx.request.path}`;

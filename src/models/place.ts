@@ -1,13 +1,7 @@
-import { Schema } from 'mongoose';
-import {
-  arrayProp,
-  instanceMethod,
-  InstanceType,
-  ModelType,
-  prop,
-  staticMethod,
-  Typegoose,
-} from 'typegoose';
+import { arrayProp, index, prop, Typegoose } from 'typegoose';
+import { ClassInstance } from '../interfaces/model';
+import { Location } from './schemas/location';
+import { Review } from './schemas/review';
 
 interface OfficeHour {
   default: string;
@@ -15,11 +9,12 @@ interface OfficeHour {
   dayoff?: string;
 }
 
-interface Review {}
-
+@index({ location: '2dsphere' })
 export class Place extends Typegoose {
   @prop({ required: true })
   name!: string;
+  @prop({ required: true })
+  location!: ClassInstance<Location>;
   @prop({ required: true })
   address!: string; // Road Address
   @prop({ min: 0, max: 5, default: 0 })
@@ -31,11 +26,11 @@ export class Place extends Typegoose {
   @arrayProp({ items: String })
   images!: string[];
   @arrayProp({ items: String })
-  tags!: string[];
+  tags?: string[];
   @arrayProp({ items: String })
-  likes!: string[];
+  likes?: string[];
   @arrayProp({ items: Object })
-  reviews!: Review[];
+  reviews?: ClassInstance<Review>[];
 }
 
 const placeModel = new Place().getModelForClass(Place);
