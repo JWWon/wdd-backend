@@ -1,22 +1,22 @@
-import { Document, model, Schema } from 'mongoose';
-import position, { Position } from '../lib/schema/position';
+import { Schema } from 'mongoose';
+import { arrayProp, prop, Typegoose } from 'typegoose';
+import { Position } from './schemas/position';
 
-export interface Feed extends Document {
-  dog: Schema.Types.ObjectId;
-  user: string;
-  paths: Position[];
-  seconds: number;
-  distance: number;
-  steps: number;
+export class Feed extends Typegoose {
+  @prop({ required: true, ref: 'Dog' })
+  dog!: Schema.Types.ObjectId;
+  @prop({ required: true, ref: 'User' })
+  user!: Schema.Types.ObjectId;
+  @prop({ required: true, min: 0 })
+  seconds!: number;
+  @prop({ required: true, min: 0 })
+  distance!: number; // km
+  @prop({ required: true, min: 0 })
+  steps!: number;
+  @arrayProp({ items: Object })
+  paths!: Position[];
 }
 
-const feedSchema = new Schema({
-  dog: { type: Schema.Types.ObjectId, required: true },
-  user: { type: String, required: true },
-  paths: [position],
-  seconds: { type: Number, required: true, min: 0 },
-  distance: { type: Number, required: true, min: 0 },
-  steps: { type: Number, required: true, min: 0 },
-});
+const feedModel = new Feed().getModelForClass(Feed);
 
-export default model<Feed>('Placement', feedSchema);
+export default feedModel;

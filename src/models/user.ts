@@ -90,8 +90,10 @@ export class User extends Typegoose {
     NotFound.assert(body.email, '파라미터에 이메일이 없습니다.');
     NotFound.assert(body.password, '파라미터에 비밀번호가 없습니다.');
     NotFound.assert(body.name, '파라미터에 이름이 없습니다.');
-    const userExist = await this.findOne({ email: body.email });
-    Forbidden.assert(!userExist, '이미 존재하는 계정입니다.');
+    Forbidden.assert(
+      !(await this.findOne({ email: body.email })),
+      '이미 존재하는 계정입니다.'
+    );
     const hashed = await hash(body.password, 10);
     body.password = hashed;
     const user = await this.create(body);

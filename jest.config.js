@@ -1,13 +1,7 @@
 module.exports = {
   roots: ['<rootDir>/src'],
   collectCoverage: true,
-  collectCoverageFrom: [
-    '**/*.{ts,js}',
-    '!**/node_modules/**',
-    '!**/src/@types/**',
-    '!**/build/**',
-    '!**/coverage/**',
-  ],
+  collectCoverageFrom: ['**/{lib,middleware,models,routes}/*.{ts,js}'],
   transform: {
     '\\.ts$': 'ts-jest',
   },
