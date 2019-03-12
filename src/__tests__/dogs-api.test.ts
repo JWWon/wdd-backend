@@ -43,6 +43,7 @@ describe('POST /dogs', () => {
   });
 
   it('should create dog successfully', async () => {
+    expect(sampleUser).toHaveProperty('token');
     const app = server.getInstance();
     // Create Dog
     const resCreate = await request(app.callback())
@@ -66,6 +67,7 @@ describe('POST /dogs', () => {
 
 describe('GET /dogs', () => {
   it('should get all dogs successfully', async () => {
+    expect(sampleUser).toHaveProperty('token');
     const app = server.getInstance();
     const res = await request(app.callback())
       .get('/dogs')
@@ -77,6 +79,7 @@ describe('GET /dogs', () => {
 
 describe('PATCH /dogs/:id', () => {
   it('should update dog successfully', async () => {
+    expect(sampleUser).toHaveProperty('token');
     const app = server.getInstance();
     const updateData = {
       thumbnail: 'https://www.example.com/image.png',

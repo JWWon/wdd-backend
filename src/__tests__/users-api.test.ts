@@ -4,15 +4,16 @@ import log from '../lib/log';
 import User from '../models/user';
 import { server } from './api-helper';
 
-const userInfo = {
-  email: `${sample(['skywrace', 'example', 'lalala'])}@${sample([
+let sampleUser: any = {
+  email: `${sample(['baemin', 'example', 'lalala'])}@${sample([
     'naver.com',
     'gmail.com',
     'daum.net',
   ])}`,
-  password: sample(['thisispassword', 'hellomyoldspo']),
-  name: '원지운',
+  name: '테스트계정임다',
+  // token: string
 };
+const password = sample(['thisispassword', 'hellomyoldspo']);
 
 beforeAll(async () => {
   const drop = await User.collection.drop();
@@ -26,12 +27,13 @@ describe('POST /signup', () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .post('/signup')
-      .send(userInfo);
+      .send({ ...sampleUser, password });
 
     expect(res.body).toEqual(
-      expect.objectContaining(pick(userInfo, ['email', 'name']))
+      expect.objectContaining(pick(sampleUser, ['email', 'name']))
     );
     expect(res.status).toBe(201);
+    sampleUser = res.body;
   });
 });
 
@@ -48,7 +50,7 @@ describe('POST /signin', () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .post('/signin')
-      .send({ email: userInfo.email, password: 'thisiswrong' });
+      .send({ email: sampleUser.email, password: 'thisiswrong' });
     expect(res.status).toEqual(401); // NotAuthenticated
   });
 
@@ -56,14 +58,28 @@ describe('POST /signin', () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .post('/signin')
-      .send({ email: userInfo.email, password: userInfo.password });
+      .send({ password, email: sampleUser.email });
     expect(res.body).toEqual(
-      expect.objectContaining({ email: userInfo.email })
+      expect.objectContaining(pick(sampleUser, ['email', 'name', 'token']))
     );
     expect(res.status).toBe(200);
   });
 });
 
+describe('PATCH /user', () => {
+  it('should update user successfully', async () => {
+    expect(sampleUser).toHaveProperty('token');
+    const app = server.getInstance();
+    const data = { name: '개명했어요', gender: 'F' };
+    const res = await request(app.callback())
+      .patch('/user')
+      .set('authorization', sampleUser.token)
+      .send(data);
+    expect(res.body).toEqual(expect.objectContaining(data));
+    expect(res.status).toBe(200);
+  });
+});
+
 describe('POST /forgot-password', () => {
-  it('should send email correctly', async () => {});
+  it('should send email successfully', async () => {});
 });

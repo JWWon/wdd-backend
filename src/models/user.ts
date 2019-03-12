@@ -118,19 +118,15 @@ export class User extends Typegoose {
     for (const id in this.dogs) {
       this.dogs[id].default = false;
     }
-    this.dogs[dog._id] = { ...serialized, default: true };
-    await this.update({ dogs: this.dogs }, { new: true });
+    this.dogs[dog._id] = Object.assign(serialized, { default: true });
+    await this.save();
     return this.serialize();
   }
   @instanceMethod
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['name', 'thumbnail']);
-    await this.update(
-      {
-        [`dogs.${dog._id}`]: { ...this.dogs[dog._id], ...serialized },
-      },
-      { new: true, overwrite: true }
-    );
+    this.dogs[dog._id] = Object.assign(this.dogs[dog._id], serialized);
+    await this.save();
     return this.serialize();
   }
   @instanceMethod

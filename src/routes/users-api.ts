@@ -68,8 +68,9 @@ const api = ({ User }: Model) => ({
   update: async (ctx: Context<UserInterface>) => {
     const { body } = ctx.request;
     if ('password' in body) body.password = await hash(body.password, 10);
-    ctx.user = await ctx.user.update(body, { new: true });
-    return ctx.ok(await ctx.user.serialize());
+    ctx.user = Object.assign(ctx.user, body);
+    await ctx.user.save({ validateBeforeSave: true });
+    return ctx.ok(ctx.user.serialize());
   },
   selectDog: async (ctx: Context<null, null, { dog_id: string }>) => {
     let foundDog: boolean = false;
