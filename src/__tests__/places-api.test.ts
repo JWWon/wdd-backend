@@ -5,8 +5,9 @@ import Place from '../models/place';
 import { server } from './api-helper';
 // tslint:disable:max-line-length
 
-const LATITUDE = 0.03;
-const LONGITUDE = 0.02;
+const LATITUDE = 0.02;
+const LONGITUDE = 0.015;
+const DATA_LENGTH = 30;
 
 const center = { latitude: 37.498625, longitude: 127.026995 };
 
@@ -48,9 +49,9 @@ beforeAll(async () => {
 });
 
 describe('POST /places', () => {
-  it('should create 30 places successfully', async () => {
+  it('should create multiple places successfully', async () => {
     const app = server.getInstance();
-    for (let i = 0; i < 30; i += 1) {
+    for (let i = 0; i < DATA_LENGTH; i += 1) {
       const place = generatePlace();
       const res = await request(app.callback())
         .post('/places')
@@ -60,28 +61,24 @@ describe('POST /places', () => {
           pick(place, ['name', 'address', 'officeHour', 'images'])
         )
       );
-      expect(res.body).toEqual(
-        expect.objectContaining(pick(place, ['name', 'address', 'officeHour']))
-      );
       expect(res.status).toBe(201);
     }
   });
 });
 
-describe('GET /places/all', () => {
+describe('GET /places', () => {
   it('should get all places', async () => {
     const app = server.getInstance();
-    const res = await request(app.callback()).get('/places/all');
+    const res = await request(app.callback()).get('/places');
+    expect(res.body.length).toBe(DATA_LENGTH);
     expect(res.status).toBe(200);
   });
-});
 
-describe('GET /places', () => {
   it('should get places near 1km', async () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .get('/places')
-      .query({ ...center, range: 1000 });
+      .query({ ...center, range: 1 });
     expect(res.body.length).toBeGreaterThan(0);
     expect(res.status).toBe(200);
   });

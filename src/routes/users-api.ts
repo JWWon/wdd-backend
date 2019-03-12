@@ -71,12 +71,10 @@ const api = ({ User }: Model) => ({
     ctx.user = await ctx.user.update(body, { new: true });
     return ctx.ok(await ctx.user.serialize());
   },
-  selectDog: async (ctx: Context<{ dog_id: string }>) => {
-    const { body } = ctx.request;
-    hasParams(['dog_id'], body);
+  selectDog: async (ctx: Context<null, null, { dog_id: string }>) => {
     let foundDog: boolean = false;
     for (const id in ctx.user.dogs) {
-      const selectThis: boolean = body.dog_id === id;
+      const selectThis: boolean = ctx.params.dog_id === id;
       if (selectThis) foundDog = true;
       ctx.user.dogs[id] = { ...ctx.user.dogs[id], default: selectThis };
     }
@@ -97,5 +95,5 @@ export default createController(api)
   .post('/forgot-password', 'forgotPassword')
   .get('/user', 'get', { before: [loadUser] })
   .patch('/user', 'update', { before: [loadUser] })
-  .patch('/user/dog', 'selectDog', { before: [loadUser] })
+  .patch('/user/:dog_id', 'selectDog', { before: [loadUser] })
   .delete('/user', 'delete', { before: [loadUser] });
