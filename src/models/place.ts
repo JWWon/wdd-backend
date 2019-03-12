@@ -1,10 +1,10 @@
+import { Schema } from 'mongoose';
 import { arrayProp, index, prop, Typegoose } from 'typegoose';
 import { ClassInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
-import { Review } from './schemas/review';
 
 interface OfficeHour {
-  default: string;
+  default: Schema.Types.ObjectId;
   weekend?: string;
   dayoff?: string;
 }
@@ -27,10 +27,10 @@ export class Place extends Typegoose {
   images!: string[];
   @arrayProp({ items: String })
   tags?: string[];
-  @arrayProp({ items: String })
-  likes?: string[];
-  @arrayProp({ items: Object })
-  reviews?: ClassInstance<Review>[];
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User' })
+  likes?: Schema.Types.ObjectId[];
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Review' })
+  reviews?: Schema.Types.ObjectId[];
 }
 
 const placeModel = new Place().getModelForClass(Place);

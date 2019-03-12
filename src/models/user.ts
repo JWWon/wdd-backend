@@ -2,10 +2,12 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
+import { Schema } from 'mongoose';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
 import {
+  arrayProp,
   instanceMethod,
   InstanceType,
   ModelType,
@@ -14,28 +16,25 @@ import {
   Typegoose,
 } from 'typegoose';
 
+type SerializeColumn =
+  | 'email'
+  | 'status'
+  | 'name'
+  | 'birth'
+  | 'gender'
+  | 'lastLogin'
+  | 'dogs'
+  | 'places'
+  | 'reviews';
+
 interface DogSummery {
   name: string;
   thumbnail?: string;
   default: boolean;
 }
 
-interface PlaceSummery {
-  name: string;
-  thumbnail: string;
-  review?: string;
-}
-
-interface Serialized {
-  email: string; // unique
+interface Serialized extends Pick<User, SerializeColumn> {
   token: string;
-  status: 'ACTIVE' | 'PAUSED' | 'TERMINATED';
-  name: string;
-  birth?: string;
-  gender?: 'M' | 'F';
-  lastLogin: Date;
-  dogs: { [id: string]: DogSummery };
-  places: { [id: string]: PlaceSummery };
 }
 
 export async function hashPassword(password: string) {
@@ -60,9 +59,11 @@ export class User extends Typegoose {
   @prop({ default: Date.now })
   createdAt!: Date;
   @prop({ default: {} })
-  dogs!: Serialized['dogs'];
-  @prop({ default: {} })
-  places!: Serialized['places'];
+  dogs!: { [id: string]: DogSummery };
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Place' })
+  places?: Schema.Types.ObjectId[];
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Review' })
+  reviews?: Schema.Types.ObjectId[];
 
   @staticMethod
   static async checkUserExist(
@@ -93,6 +94,7 @@ export class User extends Typegoose {
         'lastLogin',
         'dogs',
         'places',
+        'reviews',
       ]),
       token: jwt.sign(pick(this, ['_id', 'email']), env.SECRET),
     };

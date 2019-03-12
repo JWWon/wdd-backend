@@ -31,6 +31,8 @@ const latLngToLocation = ({ latitude, longitude }: LatLng) => {
   };
 };
 
+const MAX_DISTANCE = 300;
+
 const api = ({ Place }: Model) => ({
   getAll: async (ctx: Context) => {
     return ctx.ok(await Place.find());
@@ -51,7 +53,9 @@ const api = ({ Place }: Model) => ({
       {
         $geoNear: {
           near: latLngToLocation(pick(query, ['latitude', 'longitude'])),
-          maxDistance: query.range ? parseInt(query.range, 10) * 1000 : 500,
+          maxDistance: query.range
+            ? parseInt(query.range, 10) * 1000
+            : MAX_DISTANCE,
           spherical: true,
           distanceField: 'distance',
           distanceMultiplier: 0.001,
