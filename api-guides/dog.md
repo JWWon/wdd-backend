@@ -4,16 +4,16 @@
 
 ```javascript
 interface Dog {
-    user: Schema.Types.ObjectId;
-    name: string;
-    thumbnail?: string;
-	breed: string;
-	gender: 'M' | 'F' | 'N';
-	birth?: string;
-    weight?: number;
-    info?: string;
-	feeds?: Schema.Types.ObjectId[];
-	likes?: Schema.Types.ObjectId[];
+  user: Schema.Types.ObjectId;
+  name: string;
+  thumbnail?: string;
+  breed: string;
+  gender: 'M' | 'F' | 'N';
+  birth?: string;
+  weight?: number;
+  info?: string;
+  feeds?: Schema.Types.ObjectId[];
+  likes?: Schema.Types.ObjectId[];
 }
 ```
 
@@ -21,78 +21,77 @@ interface Dog {
 
 ##### [GET] /dogs, get all user dogs
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Dog[]
+  ...,
+  body: Dog[]
 }
 ```
 
 ##### [POST] /dogs, create dog
 
-*authorization required*
+_authorization required_
 
 > request
 
-```json
+```
 Dog [only require strict params]
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Dog
+  ...,
+  body: Dog[]
 }
 ```
 
 ##### [GET] /dogs/:id
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Dog
+  ...,
+  body: Dog[]
 }
 ```
 
 ##### [PATCH] /dogs/:id
 
-*authorization required*
+_authorization required_
 
 > request
 
-```json
+```
 DOG [only require strict params]
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Dog
+  ...,
+  body: Dog[]
 }
 ```
 
 ##### [DELETE] /dogs/:id
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: { message: 'Dog Terminated' }
+  ...,
+  body: { message: 'Dog Terminated' }
 }
 ```
-

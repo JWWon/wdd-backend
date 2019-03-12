@@ -4,20 +4,20 @@
 
 ```javascript
 interface Place {
-    name: string;
-    location: { latitude: number, longitude: number };
-    address: string; // Road Address
-    rating: number;
-    officeHour?: OfficeHour;
-	contact?: string;
-	images: string[];
-	tags?: string[];
-	likes?: Schema.Types.ObjectId[];
-	reviews?: Schema.Types.ObjectId[];
+  name: string;
+  location: { latitude: number, longitude: number };
+  address: string; // Road Address
+  rating: number;
+  officeHour?: OfficeHour;
+  contact?: string;
+  images: string[];
+  tags?: string[];
+  likes?: Schema.Types.ObjectId[];
+  reviews?: Schema.Types.ObjectId[];
 }
 
 interface Response extends Place {
-    distance: number; // km
+  distance: number; // km
 }
 ```
 
@@ -27,16 +27,16 @@ interface Response extends Place {
 
 > request
 
-```json
+```
 Place [only require strict params]
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Response
+  ...,
+  body: Response
 }
 ```
 
@@ -44,18 +44,17 @@ Place [only require strict params]
 
 > request
 
-```json
-[Options]
+```
+[Options];
 // name:  검색 쿼리
 // range: 탐색 거리(km)
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: Response[]
+  ...,
+  body: Response[]
 }
 ```
-

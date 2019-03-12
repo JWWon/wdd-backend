@@ -4,22 +4,22 @@
 
 ```javascript
 interface DogSummery {
-    name: string;
-    thumbnail?: string;
-    default: boolean;
+  name: string;
+  thumbnail?: string;
+  default: boolean;
 }
 
 interface User {
-    _id: Schema.Types.ObjectId;
-    email: string;
-    status: 'ACTIVE' | 'PAUSED' | 'TERMINATED';
-    name: string;
-    birth?: string; // YYYY.MM.DD
-    gender?: 'M' | 'F'
-    lastLogin: Date
-    dogs: { [id: Schema.Types.ObjectId]: DogSummery }
-    places?: Schema.Types.ObjectId[]
-    reviews?: Schema.Types.ObjectId[]
+  _id: Schema.Types.ObjectId;
+  email: string;
+  status: 'ACTIVE' | 'PAUSED' | 'TERMINATED';
+  name: string;
+  birth?: string; // YYYY.MM.DD
+  gender?: 'M' | 'F'
+  lastLogin: Date
+  dogs: { [id: Schema.Types.ObjectId]: DogSummery }
+  places?: Schema.Types.ObjectId[]
+  reviews?: Schema.Types.ObjectId[]
 }
 ```
 
@@ -29,19 +29,19 @@ interface User {
 
 > request
 
-```json
+```javascript
 {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: User
+  ...,
+  body: User
 }
 ```
 
@@ -49,20 +49,20 @@ interface User {
 
 > request
 
-```json
+```javascript
 {
-    email: string;
-    password: string;
-    name: string
+  email: string;
+  password: string;
+  name: string;
 }
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: User
+  ...,
+  body: User
 }
 ```
 
@@ -70,75 +70,74 @@ interface User {
 
 > request
 
-```json
+```javascript
 {
-    email: string
+  email: string;
 }
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    email: string
+  ...,
+  email: string
 }
 ```
 
 ##### [GET] /user
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    body: User
+  body: User;
 }
 ```
 
 ##### [PATCH] /user
 
-*authorization required*
+_authorization required_
 
 > request
 
-```json
+```
 User [just pass update needed params]
 ```
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: User
+  ...,
+  body: User
 }
 ```
 
 ##### [PATCH] /user/:dog_id (select default dog)
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    body: User
+  ...,
+  body: User
 }
 ```
 
 ##### [DELETE] /user
 
-*authorization required*
+_authorization required_
 
 > response
 
-```json
+```javascript
 {
-    ...,
-    message: 'User Terminated'
+  ...,
+  message: 'User Terminated'
 }
 ```
-
