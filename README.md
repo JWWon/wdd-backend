@@ -43,6 +43,16 @@ Koa.js + Typescript + MongoDB + Docker
 6. `docker-compose build`
 7. `docker-compose up -d`
 
+### Update (on server)
+
+#### pre
+
+1. `../wdd-backend$ chmod +x ./docker-update.sh`
+
+### script (on server)
+
+1. `../wdd-backend$ ./docker-update.sh `
+
 ## API
 
 ### authorization
