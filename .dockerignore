@@ -2,3 +2,4 @@ node_modules
 dist
 *.log
 ssh-connect.sh
+*.md

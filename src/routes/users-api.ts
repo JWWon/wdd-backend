@@ -4,10 +4,20 @@ import { hash } from 'bcrypt';
 import { NotFound } from 'fejl';
 import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
-import { Model } from '../interfaces/model';
+import { ClassInstance, Model } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
-import { hashPassword, User as Instance } from '../models/user';
+import { hashPassword, User as Class } from '../models/user';
+
+type UserInterface = ClassInstance<
+  Class,
+  | 'serialize'
+  | 'updateLoginStamp'
+  | 'checkPassword'
+  | 'createDog'
+  | 'updateDog'
+  | 'deleteDog'
+>;
 
 const api = ({ User }: Model) => ({
   signIn: async (ctx: Context<{ email: string; password: string }>) => {
@@ -51,22 +61,20 @@ const api = ({ User }: Model) => ({
     });
     return ctx.ok({ email });
   },
-  get: async (ctx: Context<null>) => {
+  get: async (ctx: Context) => {
     await ctx.user.updateLoginStamp();
     return ctx.ok(ctx.user.serialize());
   },
-  update: async (ctx: Context<Instance>) => {
+  update: async (ctx: Context<UserInterface>) => {
     const { body } = ctx.request;
     if ('password' in body) body.password = await hash(body.password, 10);
     ctx.user = await ctx.user.update(body, { new: true });
     return ctx.ok(await ctx.user.serialize());
   },
-  selectDog: async (ctx: Context<{ dog_id: string }>) => {
-    const { body } = ctx.request;
-    hasParams(['dog_id'], body);
+  selectDog: async (ctx: Context<null, null, { dog_id: string }>) => {
     let foundDog: boolean = false;
     for (const id in ctx.user.dogs) {
-      const selectThis: boolean = body.dog_id === id;
+      const selectThis: boolean = ctx.params.dog_id === id;
       if (selectThis) foundDog = true;
       ctx.user.dogs[id] = { ...ctx.user.dogs[id], default: selectThis };
     }
@@ -74,7 +82,7 @@ const api = ({ User }: Model) => ({
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await ctx.user.serialize());
   },
-  delete: async (ctx: Context<null>) => {
+  delete: async (ctx: Context) => {
     ctx.user.status = 'TERMINATED';
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.noContent({ message: 'User Terminated' });
@@ -87,5 +95,5 @@ export default createController(api)
   .post('/forgot-password', 'forgotPassword')
   .get('/user', 'get', { before: [loadUser] })
   .patch('/user', 'update', { before: [loadUser] })
-  .patch('/user/dog', 'selectDog', { before: [loadUser] })
+  .patch('/user/:dog_id', 'selectDog', { before: [loadUser] })
   .delete('/user', 'delete', { before: [loadUser] });

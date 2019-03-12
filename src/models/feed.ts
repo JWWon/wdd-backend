@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
-import { arrayProp, prop, Typegoose } from 'typegoose';
-import { Position } from './schemas/position';
+import { prop, Typegoose } from 'typegoose';
+import { Location } from './schemas/location';
 
 export class Feed extends Typegoose {
   @prop({ required: true, ref: 'Dog' })
@@ -13,8 +13,10 @@ export class Feed extends Typegoose {
   distance!: number; // km
   @prop({ required: true, min: 0 })
   steps!: number;
-  @arrayProp({ items: Object })
-  paths!: Position[];
+  @prop({ required: true })
+  pins!: string; // JSON.stringify()
+  @prop()
+  location!: Location;
 }
 
 const feedModel = new Feed().getModelForClass(Feed);

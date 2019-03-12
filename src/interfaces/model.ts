@@ -9,3 +9,8 @@ export interface Model {
   Feed: typeof Feed;
   User: typeof User;
 }
+
+export type ClassInstance<T, P = ''> = Pick<
+  T,
+  Exclude<keyof T, 'getModelForClass' | 'setModelForClass' | P>
+>;
