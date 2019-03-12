@@ -1,6 +1,6 @@
 {
   "name": "wdd-backend",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Backend for Woodongdang service",
   "scripts": {
     "test": "clear && npm run lint && cross-env NODE_ENV=test jest --detectOpenHandles",
