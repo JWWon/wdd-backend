@@ -35,7 +35,7 @@ const api = ({ User }: Model) => ({
   ) => {
     const { body } = ctx.request;
     hasParams(['email', 'password', 'name'], body);
-    await User.checkUserExist(body);
+    await User.checkExist(body);
     body.password = await hashPassword(body.password);
     const user = await User.create(body);
     return ctx.created(user.serialize());

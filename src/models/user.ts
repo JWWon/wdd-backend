@@ -66,9 +66,9 @@ export class User extends Typegoose {
   reviews?: Schema.Types.ObjectId[];
 
   @staticMethod
-  static async checkUserExist(
+  static async checkExist(
     this: ModelType<User>,
-    { email }: { email: string; [key: string]: any }
+    { email }: Pick<User, 'email' | 'password' | 'name'>
   ) {
     const user = await this.findOne({ email });
     Forbidden.assert(!user, '이미 존재하는 계정입니다.');

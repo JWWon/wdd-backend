@@ -5,7 +5,10 @@
 ```javascript
 interface Place {
   name: string;
-  location: { latitude: number, longitude: number };
+  location: {
+    type: 'Point',
+    coordinates: [longitude, latitude],
+  };
   address: string; // Road Address
   rating: number;
   officeHour?: OfficeHour;
@@ -40,14 +43,15 @@ Place [only require strict params]
 }
 ```
 
-##### [GET] /places?latitude={{number}}&longitude={{number}}&name={{string}}&range={{number}}
+##### [GET] /places?coordinates=[{{number}},{{number}}]&name={{string}}&range={{number}}
 
 > request
 
 ```
-[Options];
-// name:  검색 쿼리
-// range: 탐색 거리(km)
+[Options]
+// coordinates : 기준 좌표
+// name        : 검색 쿼리
+// range       : 탐색 거리(km)
 ```
 
 > response

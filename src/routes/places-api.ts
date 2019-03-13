@@ -4,54 +4,40 @@ import { pick } from 'lodash';
 import { Context } from '../interfaces/context';
 import { ClassInstance, Model } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
-import { LatLng, latLngToLocation, locationToLatLng } from '../lib/location';
 import { Place as Class } from '../models/place';
 
-type Interface = ClassInstance<Class>;
-type WebInterface<T = Interface> = Pick<T, Exclude<keyof T, 'location'>> & {
-  location: LatLng;
-};
+type Instance = ClassInstance<Class>;
 
 interface Search {
-  latitude?: string;
-  longitude?: string;
+  coordinates?: [number, number];
   name?: string;
   range?: string; // km
 }
 
-interface Response extends Interface {
+interface Response extends Instance {
   distance: number; // km
 }
 
 const MAX_DISTANCE = 300;
 
-const placeForWeb = <T = null>(place: T & Interface) =>
-  Object.assign(place, {
-    location: locationToLatLng(place.location),
-  }) as WebInterface<T>;
-
 const api = ({ Place }: Model) => ({
-  create: async (ctx: Context<WebInterface>) => {
+  create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     hasParams(['name', 'location', 'address'], body);
-    const updateBody: Interface = {
-      ...body,
-      location: latLngToLocation(body.location),
-    };
-    const place = await Place.create(updateBody);
-    return ctx.created(placeForWeb(place));
+    const place = await Place.create(body);
+    return ctx.created(place);
   },
   search: async (ctx: Context<null, Search>) => {
     const { query } = ctx.request;
     let places: Response[] = [];
-    if ('latitude' in query && 'longitude' in query) {
+    if (query.coordinates) {
       places = await Place.aggregate([
         {
           $geoNear: {
-            near: latLngToLocation(pick(query, [
-              'latitude',
-              'longitude',
-            ]) as LatLng),
+            near: {
+              type: 'Point',
+              coordinates: query.coordinates,
+            },
             maxDistance: query.range
               ? parseInt(query.range, 10) * 1000
               : MAX_DISTANCE,
@@ -65,8 +51,7 @@ const api = ({ Place }: Model) => ({
       places = await Place.find().lean();
     }
     NotFound.assert(places.length > 0, '주변 가게를 찾을 수 없습니다.');
-    const converted = places.map(place => placeForWeb(place));
-    return ctx.ok(converted);
+    return ctx.ok(places);
   },
 });
 

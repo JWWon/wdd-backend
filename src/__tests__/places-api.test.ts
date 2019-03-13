@@ -9,12 +9,12 @@ const LATITUDE = 0.02;
 const LONGITUDE = 0.015;
 const DATA_LENGTH = 30;
 
-const center = { latitude: 37.498625, longitude: 127.026995 };
+const center = [127.026995, 37.498625];
 
-const randLocation = (center: { latitude: number; longitude: number }) => ({
-  latitude: center.latitude + Math.random() * LATITUDE * 2 - LATITUDE,
-  longitude: center.longitude + Math.random() * LONGITUDE * 2 - LONGITUDE,
-});
+const randCoord = (center: number[]) => [
+  center[0] + Math.random() * LATITUDE * 2 - LATITUDE,
+  center[1] + Math.random() * LONGITUDE * 2 - LONGITUDE,
+];
 
 const generatePlace = () => ({
   name: sample([
@@ -26,7 +26,10 @@ const generatePlace = () => ({
     '일구야 놀자',
     '몽구쓰',
   ]),
-  location: randLocation(center),
+  location: {
+    type: 'Point',
+    coordinates: randCoord(center),
+  },
   address: `서울특별시 강남구 ${sample([
     '역삼동 821',
     '역삼1동 816-3',
@@ -56,11 +59,7 @@ describe('POST /places', () => {
       const res = await request(app.callback())
         .post('/places')
         .send(place);
-      expect(res.body).toEqual(
-        expect.objectContaining(
-          pick(place, ['name', 'address', 'officeHour', 'images'])
-        )
-      );
+      expect(res.body).toEqual(expect.objectContaining(place));
       expect(res.status).toBe(201);
     }
   });
