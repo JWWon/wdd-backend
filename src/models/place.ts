@@ -4,7 +4,7 @@ import { ClassInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
 
 interface OfficeHour {
-  default: Schema.Types.ObjectId;
+  default: string;
   weekend?: string;
   dayoff?: string;
 }

@@ -1,12 +1,12 @@
-import { pick, sample } from 'lodash';
+import { sample } from 'lodash';
 import request from 'supertest';
 import log from '../lib/log';
 import Place from '../models/place';
 import { server } from './api-helper';
 // tslint:disable:max-line-length
 
-const LATITUDE = 0.02;
-const LONGITUDE = 0.015;
+const LATITUDE = 0.03;
+const LONGITUDE = 0.02;
 const DATA_LENGTH = 30;
 
 const center = [127.026995, 37.498625];
@@ -77,8 +77,14 @@ describe('GET /places', () => {
     const app = server.getInstance();
     const res = await request(app.callback())
       .get('/places')
-      .query({ ...center, range: 1 });
+      .query({
+        location: JSON.stringify({ latitude: center[1], longitude: center[0] }),
+        range: 1,
+      });
     expect(res.body.length).toBeGreaterThan(0);
+    res.body.forEach((data: any) => {
+      expect(data.distance).toBeLessThan(1);
+    });
     expect(res.status).toBe(200);
   });
 });

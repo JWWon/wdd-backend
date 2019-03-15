@@ -60,7 +60,7 @@ describe('POST /signin', () => {
       .post('/signin')
       .send({ password, email: sampleUser.email });
     expect(res.body).toEqual(
-      expect.objectContaining(pick(sampleUser, ['email', 'name', 'token']))
+      expect.objectContaining(pick(sampleUser, ['email', 'name']))
     );
     expect(res.status).toBe(200);
   });

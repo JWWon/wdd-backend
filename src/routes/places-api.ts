@@ -1,6 +1,6 @@
 import { createController } from 'awilix-koa';
 import { NotFound } from 'fejl';
-import { pick } from 'lodash';
+import { orderBy } from 'lodash';
 import { Context } from '../interfaces/context';
 import { ClassInstance, Model } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
@@ -8,9 +8,14 @@ import { Place as Class } from '../models/place';
 
 type Instance = ClassInstance<Class>;
 
+interface LatLng {
+  latitude: number;
+  longitude: number;
+}
+
 interface Search {
-  coordinates?: [number, number];
-  name?: string;
+  keyword?: string;
+  location?: string;
   range?: string; // km
 }
 
@@ -19,6 +24,23 @@ interface Response extends Instance {
 }
 
 const MAX_DISTANCE = 300;
+
+// Helpers
+function latLngToCoord(location: string) {
+  const { latitude, longitude }: LatLng = JSON.parse(location);
+  return [longitude, latitude];
+}
+
+function calcDistance(posX: number[], posY: number[]) {
+  const p = 0.017453292519943295; // Math.PI / 180
+  const c = Math.cos;
+  const a =
+    0.5 -
+    c((posY[1] - posX[1]) * p) / 2 +
+    (c(posX[1] * p) * c(posY[1] * p) * (1 - c((posY[0] - posX[0]) * p))) / 2;
+
+  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+}
 
 const api = ({ Place }: Model) => ({
   create: async (ctx: Context<Instance>) => {
@@ -30,23 +52,26 @@ const api = ({ Place }: Model) => ({
   search: async (ctx: Context<null, Search>) => {
     const { query } = ctx.request;
     let places: Response[] = [];
-    if (query.coordinates) {
-      places = await Place.aggregate([
-        {
-          $geoNear: {
-            near: {
-              type: 'Point',
-              coordinates: query.coordinates,
-            },
-            maxDistance: query.range
+    if (query.location) {
+      const coordinates = latLngToCoord(query.location);
+      places = await Place.find({
+        location: {
+          $near: {
+            $maxDistance: query.range
               ? parseInt(query.range, 10) * 1000
               : MAX_DISTANCE,
-            spherical: true,
-            distanceField: 'distance',
-            distanceMultiplier: 0.001,
+            $geometry: {
+              coordinates,
+              type: 'Point',
+            },
           },
         },
-      ]);
+      }).lean();
+      places = places.map(place => ({
+        ...place,
+        distance: calcDistance(coordinates, place.location.coordinates),
+      }));
+      places = orderBy(places, 'distance', 'asc'); // 거리 순으로 정렬
     } else {
       places = await Place.find().lean();
     }

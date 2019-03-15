@@ -43,15 +43,17 @@ Place [only require strict params]
 }
 ```
 
-##### [GET] /places?coordinates=[{{number}},{{number}}]&name={{string}}&range={{number}}
+##### [GET] /places
 
 > request
 
-```
-[Options]
-// coordinates : 기준 좌표
-// name        : 검색 쿼리
-// range       : 탐색 거리(km)
+```javascript
+{
+  // parse as string(use JSON.stringify())
+  location?: { latitude: number, longitude:number };
+  keyword?: string;
+  range?: number;
+}
 ```
 
 > response
