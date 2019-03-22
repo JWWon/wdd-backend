@@ -24,8 +24,7 @@ beforeAll(async () => {
 
 describe('POST /signup', () => {
   it('should create user successfully', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .post('/signup')
       .send({ ...sampleUser, password });
 
@@ -39,24 +38,21 @@ describe('POST /signup', () => {
 
 describe('POST /signin', () => {
   it('should get NotFound with wrong email and password', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .post('/signin')
       .send({ email: 'wrong@email.com', password: 'thisiswrong' });
     expect(res.status).toBe(404); // NotFound
   });
 
   it('should get NotAuthenticated with wrong password', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .post('/signin')
       .send({ email: sampleUser.email, password: 'thisiswrong' });
     expect(res.status).toEqual(401); // NotAuthenticated
   });
 
   it('should signin successfully', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .post('/signin')
       .send({ password, email: sampleUser.email });
     expect(res.body).toEqual(
@@ -69,9 +65,9 @@ describe('POST /signin', () => {
 describe('PATCH /user', () => {
   it('should update user successfully', async () => {
     expect(sampleUser).toHaveProperty('token');
-    const app = server.getInstance();
+
     const data = { name: '개명했어요', gender: 'F' };
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .patch('/user')
       .set('authorization', sampleUser.token)
       .send(data);

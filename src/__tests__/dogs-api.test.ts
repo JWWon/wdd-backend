@@ -27,14 +27,13 @@ beforeAll(async () => {
 
 describe('POST /dogs', () => {
   it('should get token from User', async () => {
-    const app = server.getInstance();
-    const resSignIn = await request(app.callback())
+    const resSignIn = await request(server.getInstance())
       .post('/signin')
       .send(sampleUser);
     if (resSignIn.status === 200) {
       sampleUser = resSignIn.body;
     } else {
-      const resSignUp = await request(app.callback())
+      const resSignUp = await request(server.getInstance())
         .post('/signup')
         .send({ ...sampleUser, name: '원지운' });
       expect(resSignUp.status).toBe(201);
@@ -44,9 +43,9 @@ describe('POST /dogs', () => {
 
   it('should create dog successfully', async () => {
     expect(sampleUser).toHaveProperty('token');
-    const app = server.getInstance();
+
     // Create Dog
-    const resCreate = await request(app.callback())
+    const resCreate = await request(server.getInstance())
       .post('/dogs')
       .set('authorization', sampleUser.token)
       .send(sampleDog);
@@ -55,7 +54,7 @@ describe('POST /dogs', () => {
     sampleDog = resCreate.body;
 
     // Check User
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .get('/user')
       .set('authorization', sampleUser.token);
     expect(res.body.dogs[Object.keys(res.body.dogs)[0]]).toEqual(
@@ -68,8 +67,8 @@ describe('POST /dogs', () => {
 describe('GET /dogs', () => {
   it('should get all dogs successfully', async () => {
     expect(sampleUser).toHaveProperty('token');
-    const app = server.getInstance();
-    const res = await request(app.callback())
+
+    const res = await request(server.getInstance())
       .get('/dogs')
       .set('authorization', sampleUser.token);
     expect(res.body).toEqual(expect.arrayContaining([sampleDog]));
@@ -80,12 +79,12 @@ describe('GET /dogs', () => {
 describe('PATCH /dogs/:id', () => {
   it('should update dog successfully', async () => {
     expect(sampleUser).toHaveProperty('token');
-    const app = server.getInstance();
+
     const updateData = {
       thumbnail: 'https://www.example.com/image.png',
       name: '테스트 댕댕이',
     };
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .patch(`/dogs/${sampleDog._id}`)
       .set('authorization', sampleUser.token)
       .send(updateData);

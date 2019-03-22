@@ -1,6 +1,7 @@
 import cors from '@koa/cors';
 import { AwilixContainer } from 'awilix';
 import { loadControllers, scopePerRequest } from 'awilix-koa';
+import http from 'http';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import compress from 'koa-compress';
@@ -8,7 +9,6 @@ import respond from 'koa-respond';
 import mongoose from 'mongoose';
 import env from '../lib/env';
 import { errorHandler } from '../middleware/error-handler';
-import { loadUser } from '../middleware/load-user';
 import { notFoundHandler } from '../middleware/not-found-handler';
 import { configureContainer } from './container';
 import log from './log';
@@ -41,7 +41,7 @@ export function connectDB() {
   });
 }
 
-export async function createServer() {
+export function createServer() {
   const app: AppInterface = new Koa();
 
   connectDB();
@@ -59,5 +59,5 @@ export async function createServer() {
     .use(notFoundHandler);
 
   log.debug('Server created, ready to listen', { scope: 'startup' });
-  return app;
+  return http.createServer(app.callback());
 }

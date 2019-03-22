@@ -53,10 +53,9 @@ beforeAll(async () => {
 
 describe('POST /places', () => {
   it('should create multiple places successfully', async () => {
-    const app = server.getInstance();
     for (let i = 0; i < DATA_LENGTH; i += 1) {
       const place = generatePlace();
-      const res = await request(app.callback())
+      const res = await request(server.getInstance())
         .post('/places')
         .send(place);
       expect(res.body).toEqual(expect.objectContaining(place));
@@ -67,15 +66,13 @@ describe('POST /places', () => {
 
 describe('GET /places', () => {
   it('should get all places', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback()).get('/places');
+    const res = await request(server.getInstance()).get('/places');
     expect(res.body.length).toBe(DATA_LENGTH);
     expect(res.status).toBe(200);
   });
 
   it('should get places near 1km', async () => {
-    const app = server.getInstance();
-    const res = await request(app.callback())
+    const res = await request(server.getInstance())
       .get('/places')
       .query({
         location: JSON.stringify({ latitude: center[1], longitude: center[0] }),
@@ -87,4 +84,6 @@ describe('GET /places', () => {
     });
     expect(res.status).toBe(200);
   });
+
+  it('should get places by label', async () => {});
 });
