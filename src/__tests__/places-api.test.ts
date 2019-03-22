@@ -5,11 +5,11 @@ import Place from '../models/place';
 import { server } from './api-helper';
 // tslint:disable:max-line-length
 
-const LATITUDE = 0.03;
-const LONGITUDE = 0.02;
-const DATA_LENGTH = 30;
+const LATITUDE = 0.02;
+const LONGITUDE = 0.01;
+const DATA_LENGTH = 100;
 
-const center = [127.026995, 37.498625];
+const center = [127.027021, 37.498289];
 
 const randCoord = (center: number[]) => [
   center[0] + Math.random() * LATITUDE * 2 - LATITUDE,
@@ -26,10 +26,9 @@ const generatePlace = () => ({
     '일구야 놀자',
     '몽구쓰',
   ]),
-  location: {
-    type: 'Point',
-    coordinates: randCoord(center),
-  },
+  label: sample(['CAFE', 'SHOP', 'HOSPITAL', 'OTHER']),
+  location: { type: 'Point', coordinates: randCoord(center) },
+  contact: '010-3421-9271',
   address: `서울특별시 강남구 ${sample([
     '역삼동 821',
     '역삼1동 816-3',
@@ -43,6 +42,7 @@ const generatePlace = () => ({
     'https://lh3.googleusercontent.com/HzwfjrydoIU84qOhwXmGViwjQUE_iLUFanPsvALG4cVFLnCxWCCjBnlGT6hWQC9l=w408-h306-k-no',
     'https://lh5.googleusercontent.com/proxy/zDbBz8XGRzekQ1jaCGS-cv-848xMyXNrP0ewgPTgCCJYgIYUeQzEucORfepZ-Do87NSszmCiAse1TXnvcQ_SsOeQNeZ3WMUYOAJMrjVAyhmyOUJlmiL9jOWzRntyV3pXhibdU9UDQGY8xVVbQIXys1AbcB5nPg=w408-h272-k-no',
   ],
+  rating: parseFloat((Math.random() * 5).toFixed(1)),
 });
 
 beforeAll(async () => {

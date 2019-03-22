@@ -10,6 +10,7 @@ interface OfficeHour {
 }
 
 @index({ location: '2dsphere' })
+@index({ name: 'text', address: 'text' })
 export class Place extends Typegoose {
   @prop({ required: true })
   name!: string;
@@ -17,20 +18,20 @@ export class Place extends Typegoose {
   location!: ClassInstance<Location>;
   @prop({ required: true })
   address!: string; // Road Address
+  @prop({ default: 'OTHER' })
+  label!: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
+  @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
+  contact!: string;
+  @prop()
+  thumbnail?: string;
   @prop()
   officeHour?: OfficeHour;
-  @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
-  contact?: string;
   @arrayProp({ items: String })
   images!: string[];
-  @arrayProp({ items: String })
-  tags?: string[];
   @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User' })
   likes?: Schema.Types.ObjectId[];
-  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Review' })
-  reviews?: Schema.Types.ObjectId[];
 }
 
 const placeModel = new Place().getModelForClass(Place);

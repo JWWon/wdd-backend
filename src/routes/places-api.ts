@@ -1,5 +1,4 @@
 import { createController } from 'awilix-koa';
-import { NotFound } from 'fejl';
 import { orderBy } from 'lodash';
 import { Context } from '../interfaces/context';
 import { ClassInstance, Model } from '../interfaces/model';
@@ -15,12 +14,17 @@ interface LatLng {
 
 interface Search {
   keyword?: string;
+  label?: string;
   location?: string;
   range?: string; // km
 }
 
-interface Response extends Instance {
+interface PlaceWithDist extends Instance {
   distance: number; // km
+}
+
+interface Params {
+  id: string;
 }
 
 const MAX_DISTANCE = 300;
@@ -45,42 +49,47 @@ function calcDistance(posX: number[], posY: number[]) {
 const api = ({ Place }: Model) => ({
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
-    hasParams(['name', 'location', 'address'], body);
-    const place = await Place.create(body);
-    return ctx.created(place);
+    hasParams(['name', 'location', 'address', 'contact'], body);
+    return ctx.created(await Place.create(body));
   },
   search: async (ctx: Context<null, Search>) => {
-    const { query } = ctx.request;
-    let places: Response[] = [];
-    if (query.location) {
-      const coordinates = latLngToCoord(query.location);
-      places = await Place.find({
-        location: {
+    const { query: q } = ctx.request;
+    let query: any = {};
+    if (Object.keys(q).length === 0) {
+      query = null;
+    } else {
+      if (q.label) query.label = q.label;
+      if (q.keyword) query['$text'] = { $search: q.keyword };
+      if (q.location) {
+        query.location = {
           $near: {
-            $maxDistance: query.range
-              ? parseInt(query.range, 10) * 1000
-              : MAX_DISTANCE,
+            $maxDistance: q.range ? parseFloat(q.range) * 1000 : MAX_DISTANCE,
             $geometry: {
-              coordinates,
               type: 'Point',
+              coordinates: latLngToCoord(q.location),
             },
           },
-        },
-      }).lean();
-      places = places.map(place => ({
-        ...place,
-        distance: calcDistance(coordinates, place.location.coordinates),
-      }));
-      places = orderBy(places, 'distance', 'asc'); // 거리 순으로 정렬
-    } else {
-      places = await Place.find().lean();
+        };
+      }
     }
-    NotFound.assert(places.length > 0, '주변 가게를 찾을 수 없습니다.');
+    const places: Instance[] = await Place.find(query).lean();
+    if (q.location) {
+      const coord = latLngToCoord(q.location);
+      const placesWithDist: PlaceWithDist[] = places.map(place => ({
+        ...place,
+        distance: calcDistance(coord, place.location.coordinates),
+      }));
+      return ctx.ok(orderBy(placesWithDist, 'distance', 'asc'));
+    }
     return ctx.ok(places);
+  },
+  update: async (ctx: Context<Instance, null, Params>) => {
+    const { body } = ctx.request;
   },
 });
 
 export default createController(api)
   .prefix('/places')
   .post('', 'create')
-  .get('', 'search');
+  .get('', 'search')
+  .patch('/:id', 'update');
