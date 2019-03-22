@@ -54,23 +54,19 @@ const api = ({ Place }: Model) => ({
   },
   search: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
-    let query: any = {};
-    if (Object.keys(q).length === 0) {
-      query = null;
-    } else {
-      if (q.label) query.label = q.label;
-      if (q.keyword) query['$text'] = { $search: q.keyword };
-      if (q.location) {
-        query.location = {
-          $near: {
-            $maxDistance: q.range ? parseFloat(q.range) * 1000 : MAX_DISTANCE,
-            $geometry: {
-              type: 'Point',
-              coordinates: latLngToCoord(q.location),
-            },
+    const query: { [key: string]: any } = {};
+    if (q.label) query.label = q.label;
+    if (q.keyword) query['$text'] = { $search: q.keyword };
+    if (q.location) {
+      query.location = {
+        $near: {
+          $maxDistance: q.range ? parseFloat(q.range) * 1000 : MAX_DISTANCE,
+          $geometry: {
+            type: 'Point',
+            coordinates: latLngToCoord(q.location),
           },
-        };
-      }
+        },
+      };
     }
     const places: Instance[] = await Place.find(query).lean();
     if (q.location) {

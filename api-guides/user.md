@@ -18,8 +18,7 @@ interface User {
   gender?: 'M' | 'F'
   lastLogin: Date
   dogs: { [id: Schema.Types.ObjectId]: DogSummery }
-  places?: Schema.Types.ObjectId[]
-  reviews?: Schema.Types.ObjectId[]
+  places: { _id: Schema.Types.ObjectId, type: 'LIKE' | 'REVIEW' }[]
 }
 ```
 

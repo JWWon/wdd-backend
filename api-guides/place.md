@@ -16,7 +16,6 @@ interface Place {
   images: string[];
   tags?: string[];
   likes?: Schema.Types.ObjectId[];
-  reviews?: Schema.Types.ObjectId[];
 }
 
 interface Response extends Place {
@@ -52,6 +51,7 @@ Place [only require strict params]
   // parse as string(use JSON.stringify())
   location?: { latitude: number, longitude:number };
   keyword?: string;
+  label?: string;
   range?: number;
 }
 ```
