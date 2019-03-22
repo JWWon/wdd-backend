@@ -85,5 +85,15 @@ describe('GET /places', () => {
     expect(res.status).toBe(200);
   });
 
-  it('should get places by label', async () => {});
+  it('should get places by label', async () => {
+    const label = 'CAFE';
+    const res = await request(server.getInstance())
+      .get('/places')
+      .query({ label });
+    expect(res.body.length).toBeGreaterThan(0);
+    res.body.forEach((data: any) => {
+      expect(data.label).toBe(label);
+    });
+    expect(res.status).toBe(200);
+  });
 });
