@@ -19,3 +19,64 @@ interface Report {
 ```
 
 ### Endpoints
+
+##### [POST] /reviews
+
+> request
+
+`Review [require only strice params]`
+
+> response
+
+```javascript
+{
+  ...,
+  body: Review
+}
+```
+
+##### [GET] /reviews
+
+> request
+
+```javascript
+{
+  user?: string;
+  place?: string;
+}
+```
+
+> response
+
+```javascript
+{
+  ...,
+  body: Review[]
+}
+```
+
+##### [PATCH] /reviews/:id
+
+> request
+
+`Review`
+
+> response
+
+```javascript
+{
+  ...,
+  body: Review
+}
+```
+
+##### [DELETE] /reviews/:id
+
+> response
+
+```javascript
+{
+  ...,
+  body: { message: string }
+}
+```

@@ -1,5 +1,5 @@
 import { createController } from 'awilix-koa';
-import { MethodNotAllowed } from 'fejl';
+import { Conflict } from 'fejl';
 import { findIndex } from 'lodash';
 import { Context } from '../interfaces/context';
 import { ClassInstance, Model } from '../interfaces/model';
@@ -14,16 +14,12 @@ interface Params {
 const api = ({ Review }: Model) => ({
   create: async (ctx: Context<ClassInstance<Class>>) => {
     const { body } = ctx.request;
-    hasParams(['user', 'place', 'rating'], body);
-    MethodNotAllowed.assert(
-      !(await Review.findOne({ place: body.place, user: body.user })),
+    hasParams(['place', 'rating'], body);
+    Conflict.assert(
+      !(await Review.findOne({ place: body.place, user: ctx.user._id })),
       '이미 리뷰를 작성하셨습니다.'
     );
-    const review = await Review.create(body);
-    // push review on User model
-    ctx.user.places.push({ _id: review._id, type: 'REVIEW' });
-    await ctx.user.save({ validateBeforeSave: true });
-    return ctx.created(review);
+    return ctx.created(await Review.create({ ...body, user: ctx.user._id }));
   },
   get: async (ctx: Context<null, Pick<Class, 'user' | 'place'>>) => {
     const { query } = ctx.request;
@@ -40,12 +36,7 @@ const api = ({ Review }: Model) => ({
   delete: async (ctx: Context<null, null, Params>) => {
     const review = await Review.findByIdAndRemove(ctx.params.id);
     if (!review) return ctx.notFound('리뷰를 찾을 수 없습니다.');
-    // delete review on User model
-    ctx.user.places.splice(
-      findIndex(ctx.user.places, place => place === review._id),
-      1
-    );
-    await ctx.user.save({ validateBeforeSave: true });
+    await review.remove();
     return ctx.noContent({ message: 'Review Deleted' });
   },
 });

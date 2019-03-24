@@ -20,6 +20,7 @@ const generatePlace = () => ({
   name: sample([
     '카카오프렌즈',
     '댕댕이 병원',
+    '강남 언니',
     '생선사개',
     '우리동네댕댕이',
     '1986',
@@ -94,6 +95,15 @@ describe('GET /places', () => {
     res.body.forEach((data: any) => {
       expect(data.label).toBe(label);
     });
+    expect(res.status).toBe(200);
+  });
+
+  it('should get places by keyword', async () => {
+    const keyword = '강남';
+    const res = await request(server.getInstance())
+      .get('/places')
+      .query({ keyword });
+    expect(res.body.length).toBeGreaterThan(0);
     expect(res.status).toBe(200);
   });
 });

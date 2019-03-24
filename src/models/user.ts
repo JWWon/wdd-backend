@@ -23,8 +23,7 @@ type SerializeColumn =
   | 'birth'
   | 'gender'
   | 'lastLogin'
-  | 'dogs'
-  | 'places';
+  | 'dogs';
 
 interface DogSummery {
   name: string;
@@ -59,8 +58,6 @@ export class User extends Typegoose {
   createdAt!: Date;
   @prop({ default: {} })
   dogs!: { [id: string]: DogSummery };
-  @arrayProp({ items: Object, default: [] })
-  places!: { _id: Schema.Types.ObjectId; type: 'LIKE' | 'REVIEW' }[];
 
   @staticMethod
   static async checkExist(
@@ -90,7 +87,6 @@ export class User extends Typegoose {
         'gender',
         'lastLogin',
         'dogs',
-        'places',
       ]),
       token: jwt.sign(pick(this, ['_id', 'email']), env.SECRET),
     };

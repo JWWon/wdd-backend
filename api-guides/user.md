@@ -18,7 +18,6 @@ interface User {
   gender?: 'M' | 'F'
   lastLogin: Date
   dogs: { [id: Schema.Types.ObjectId]: DogSummery }
-  places: { _id: Schema.Types.ObjectId, type: 'LIKE' | 'REVIEW' }[]
 }
 ```
 
@@ -102,9 +101,7 @@ _authorization required_
 
 > request
 
-```
-User [just pass update needed params]
-```
+`User [just pass update needed params]`
 
 > response
 
@@ -115,7 +112,9 @@ User [just pass update needed params]
 }
 ```
 
-##### [PATCH] /user/:dog_id (select default dog)
+##### [PATCH] /user/:dog_id
+
+> select default dog
 
 _authorization required_
 

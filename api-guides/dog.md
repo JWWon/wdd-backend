@@ -38,9 +38,7 @@ _authorization required_
 
 > request
 
-```
-Dog [only require strict params]
-```
+`DOG [require only strict params]`
 
 > response
 
@@ -70,9 +68,7 @@ _authorization required_
 
 > request
 
-```
-DOG [only require strict params]
-```
+`DOG`
 
 > response
 

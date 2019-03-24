@@ -4,21 +4,19 @@
 
 ```javascript
 interface Place {
-  name: string;
-  location: {
-    type: 'Point',
-    coordinates: [longitude, latitude],
-  };
-  address: string; // Road Address
-  rating: number;
+  name!: string;
+  location!: LatLng;
+  address!: string; // Road Address
+  label!: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
+  rating!: number;
+  contact!: string;
+  thumbnail?: string;
   officeHour?: OfficeHour;
-  contact?: string;
-  images: string[];
-  tags?: string[];
-  likes?: Schema.Types.ObjectId[];
+  images!: string[];
+  likes!: Schema.Types.ObjectId[];
 }
 
-interface Response extends Place {
+interface PlaceWithDist extends Place {
   distance: number; // km
 }
 ```
@@ -29,16 +27,14 @@ interface Response extends Place {
 
 > request
 
-```
-Place [only require strict params]
-```
+`Place [require only strict params]`
 
 > response
 
 ```javascript
 {
   ...,
-  body: Response
+  body: Place
 }
 ```
 
@@ -49,10 +45,10 @@ Place [only require strict params]
 ```javascript
 {
   // parse as string(use JSON.stringify())
-  location?: { latitude: number, longitude:number };
+  label?: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
   keyword?: string;
-  label?: string;
-  range?: number;
+  location?: { latitude: number, longitude: number };
+  range?: number; // unit: Km
 }
 ```
 
@@ -61,6 +57,77 @@ Place [only require strict params]
 ```javascript
 {
   ...,
-  body: Response[]
+  body: Place[] | PlaceWithDist[]
+}
+```
+
+##### [PATCH] /places/:id
+
+> request
+
+`Place [require only strict params]`
+
+> response
+
+```javascript
+{
+  ...,
+  body: Place
+}
+```
+
+##### [DELETE] /places/:id
+
+> response
+
+```javascript
+{
+  ...,
+  body: { message: string }
+}
+```
+
+##### [GET] /places/:id/likes
+
+> 좋아요 누른 가게 목록 불러오기
+
+_authorization required_
+
+> response
+
+```javascript
+{
+  ...,
+  body: Place[]
+}
+```
+
+##### [POST] /places/:id/likes
+
+> 좋아요
+
+_authorization required_
+
+> response
+
+```javascript
+{
+  ...,
+  body: Place[]
+}
+```
+
+##### [DELETE] /places/:id/likes
+
+> 좋아요 취소
+
+_authorization required_
+
+> response
+
+```javascript
+{
+  ...,
+  body: Place[]
 }
 ```
