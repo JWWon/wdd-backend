@@ -26,11 +26,11 @@ export class Place extends Typegoose {
   @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
   contact!: string;
   @prop()
-  thumbnail?: string;
+  thumbnail!: string;
   @prop()
   officeHour?: OfficeHour;
   @arrayProp({ items: String })
-  images!: string[];
+  images?: string[];
   @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User', default: [] })
   likes!: Schema.Types.ObjectId[];
 }

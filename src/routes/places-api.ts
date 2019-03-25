@@ -60,7 +60,7 @@ function createQuery(place: Instance) {
 const api = ({ Place }: Model) => ({
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
-    hasParams(['name', 'location', 'address', 'contact'], body);
+    hasParams(['name', 'location', 'address', 'contact', 'thumbnail'], body);
     body.query = createQuery(body);
     return ctx.created(await Place.create(body));
   },

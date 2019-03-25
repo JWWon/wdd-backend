@@ -3,6 +3,7 @@ import request from 'supertest';
 import log from '../lib/log';
 import Review from '../models/review';
 import { server } from './api-helper';
+import { generatePlace } from './places-api.test';
 // tslint:disable:max-line-length
 
 let sampleUser: any = {
@@ -11,22 +12,7 @@ let sampleUser: any = {
   // token: string
 };
 
-let samplePlace: any = {
-  name: '우리동네댕댕이',
-  label: '카페',
-  location: { type: 'Point', coordinates: [127.027021, 37.498289] },
-  contact: '010-3421-9271',
-  address: '서울특별시 강남구 역삼동 821',
-  officeHour: {
-    default: '오전 8:00 ~ 오후 10:00',
-    weekend: '오전 10:00 ~ 오후 9:00',
-  },
-  images: [
-    'https://lh3.googleusercontent.com/HzwfjrydoIU84qOhwXmGViwjQUE_iLUFanPsvALG4cVFLnCxWCCjBnlGT6hWQC9l=w408-h306-k-no',
-    'https://lh5.googleusercontent.com/proxy/zDbBz8XGRzekQ1jaCGS-cv-848xMyXNrP0ewgPTgCCJYgIYUeQzEucORfepZ-Do87NSszmCiAse1TXnvcQ_SsOeQNeZ3WMUYOAJMrjVAyhmyOUJlmiL9jOWzRntyV3pXhibdU9UDQGY8xVVbQIXys1AbcB5nPg=w408-h272-k-no',
-  ],
-  rating: parseFloat((Math.random() * 5).toFixed(1)),
-};
+let samplePlace: any = generatePlace();
 
 let sampleReview: any = {
   rating: Math.round(Math.random() * 5),

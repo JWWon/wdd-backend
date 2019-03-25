@@ -16,7 +16,7 @@ const randCoord = (center: number[]) => [
   center[1] + Math.random() * LONGITUDE * 2 - LONGITUDE,
 ];
 
-const generatePlace = () => ({
+export const generatePlace = () => ({
   name: sample([
     '카카오프렌즈',
     '댕댕이 병원',
@@ -30,6 +30,7 @@ const generatePlace = () => ({
   label: sample(['카페', '용품', '병원', '기타']),
   location: { type: 'Point', coordinates: randCoord(center) },
   contact: '010-3421-9271',
+  thumbnail: 'https://blog.naver.com/vkfvkfdl27/221194432046',
   address: `서울특별시 강남구 ${sample([
     '역삼동 821',
     '역삼1동 816-3',
@@ -42,6 +43,7 @@ const generatePlace = () => ({
   images: [
     'https://lh3.googleusercontent.com/HzwfjrydoIU84qOhwXmGViwjQUE_iLUFanPsvALG4cVFLnCxWCCjBnlGT6hWQC9l=w408-h306-k-no',
     'https://lh5.googleusercontent.com/proxy/zDbBz8XGRzekQ1jaCGS-cv-848xMyXNrP0ewgPTgCCJYgIYUeQzEucORfepZ-Do87NSszmCiAse1TXnvcQ_SsOeQNeZ3WMUYOAJMrjVAyhmyOUJlmiL9jOWzRntyV3pXhibdU9UDQGY8xVVbQIXys1AbcB5nPg=w408-h272-k-no',
+    'http://www.topstarnews.net/news/articleView.html?idxno=357507',
   ],
   rating: parseFloat((Math.random() * 5).toFixed(1)),
 });
