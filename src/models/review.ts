@@ -16,6 +16,8 @@ export class Review extends Typegoose {
   reports?: ClassInstance<Report>[];
 }
 
-const reviewModel = new Review().getModelForClass(Review);
+const reviewModel = new Review().getModelForClass(Review, {
+  schemaOptions: { timestamps: true },
+});
 
 export default reviewModel;

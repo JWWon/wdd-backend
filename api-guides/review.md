@@ -4,7 +4,7 @@
 
 ```javascript
 interface Review {
-  user!: Schema.Types.ObjectId;
+  user!: User;
   place!: Schema.Types.ObjectId;
   rating!: number;
   description?: string;

@@ -83,7 +83,6 @@ const api = ({ Place }: Model) => ({
       };
     }
     const places: Instance[] = await Place.find(query).lean();
-    await Place.find(query).lean();
     if (q.location) {
       const coord = latLngToCoord(q.location);
       const placesWithDist: PlaceWithDist[] = places.map(place => ({

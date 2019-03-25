@@ -48,10 +48,7 @@ const api = ({ User }: Model) => ({
 
     const { token, email } = user.serialize();
     const transporter = nodemailer.createTransport({
-      SES: new AWS.SES({
-        apiVersion: '2012-10-17',
-        region: 'us-west-2',
-      }),
+      SES: new AWS.SES({ apiVersion: '2012-10-17', region: 'us-west-2' }),
     });
     await transporter.sendMail({
       from: 'no-reply@woodongdang.com',
@@ -75,7 +72,7 @@ const api = ({ User }: Model) => ({
   selectDog: async (ctx: Context<null, null, { dog_id: string }>) => {
     let foundDog: boolean = false;
     for (const id in ctx.user.dogs) {
-      const selectThis: boolean = ctx.params.dog_id === id;
+      const selectThis = ctx.params.dog_id === id;
       if (selectThis) foundDog = true;
       ctx.user.dogs[id] = { ...ctx.user.dogs[id], default: selectThis };
     }

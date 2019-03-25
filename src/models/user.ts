@@ -2,12 +2,10 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated, NotFound } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
-import { Schema } from 'mongoose';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
 import {
-  arrayProp,
   instanceMethod,
   InstanceType,
   ModelType,
@@ -111,14 +109,14 @@ export class User extends Typegoose {
       this.dogs[id].default = false;
     }
     this.dogs[dog._id] = Object.assign(serialized, { default: true });
-    await this.save();
+    await this.save({ validateBeforeSave: true });
     return this.serialize();
   }
   @instanceMethod
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
     const serialized = pick(dog, ['name', 'thumbnail']);
     this.dogs[dog._id] = Object.assign(this.dogs[dog._id], serialized);
-    await this.save();
+    await this.save({ validateBeforeSave: true });
     return this.serialize();
   }
   @instanceMethod

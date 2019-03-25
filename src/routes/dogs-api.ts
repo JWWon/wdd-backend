@@ -32,7 +32,9 @@ const api = ({ Dog }: Model) => ({
     const { body } = ctx.request;
     const dog = await Dog.findByParams(ctx.params);
     if (!dog) return;
-    const updateDog = await Object.assign(dog, body).save();
+    const updateDog = await Object.assign(dog, body).save({
+      validateBeforeSave: true,
+    });
     await ctx.user.updateDog(updateDog);
     return ctx.ok(updateDog);
   },

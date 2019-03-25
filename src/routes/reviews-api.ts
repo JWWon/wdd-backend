@@ -38,11 +38,11 @@ const api = ({ Review }: Model) => ({
     );
     const review = await Review.create({ ...body, user: ctx.user._id });
     await updateRating(Review, review);
-    return ctx.created(review);
+    return ctx.created(Object.assign(review, { user: ctx.user }));
   },
   get: async (ctx: Context<null, Pick<Class, 'user' | 'place'>>) => {
     const { query } = ctx.request;
-    return ctx.ok(await Review.find(query));
+    return ctx.ok(await Review.find(query).populate('user'));
   },
   update: async (ctx: Context<ClassInstance<Class>, null, Params>) => {
     const { body } = ctx.request;
@@ -53,7 +53,7 @@ const api = ({ Review }: Model) => ({
     });
     ctx.state = { review: updateReview }; // pass state for middleware
     await updateRating(Review, updateReview);
-    return ctx.ok(updateReview);
+    return ctx.ok(Object.assign(updateReview, { user: ctx.user }));
   },
   delete: async (ctx: Context<null, null, Params>) => {
     const review = await Review.findByIdAndRemove(ctx.params.id);

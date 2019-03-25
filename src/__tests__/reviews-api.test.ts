@@ -1,3 +1,4 @@
+import { pick } from 'lodash';
 import request from 'supertest';
 import log from '../lib/log';
 import Review from '../models/review';
@@ -68,7 +69,9 @@ describe('POST /reviews', () => {
       .post('/reviews')
       .set('authorization', sampleUser.token)
       .send(sampleReview);
-    expect(res.body).toEqual(expect.objectContaining(sampleReview));
+    expect(res.body).toEqual(
+      expect.objectContaining(pick(sampleReview, ['rating', 'place']))
+    );
     expect(res.status).toBe(201);
     sampleReview = res.body;
   });
@@ -102,7 +105,7 @@ describe('GET /reviews', () => {
       .get('/reviews')
       .query({ user });
     res.body.forEach((data: any) => {
-      expect(data).toEqual(expect.objectContaining({ user }));
+      expect(data.user._id).toBe(user);
     });
     expect(res.status).toBe(200);
   });
