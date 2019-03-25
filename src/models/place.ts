@@ -19,8 +19,8 @@ export class Place extends Typegoose {
   location!: ClassInstance<Location>;
   @prop({ required: true })
   address!: string; // Road Address
-  @prop({ default: 'OTHER' })
-  label!: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
+  @prop({ default: '기타' })
+  label!: '카페' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
   @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })

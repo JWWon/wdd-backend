@@ -7,7 +7,7 @@ interface Place {
   name!: string;
   location!: LatLng;
   address!: string; // Road Address
-  label!: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
+  label!: '카페' | '용품' | '병원' | '기타';
   rating!: number;
   contact!: string;
   thumbnail?: string;
@@ -45,7 +45,7 @@ interface PlaceWithDist extends Place {
 ```javascript
 {
   // parse as string(use JSON.stringify())
-  label?: 'CAFE' | 'SHOP' | 'HOSPITAL' | 'OTHER';
+  label?: '카페' | '용품' | '병원' | '기타';
   keyword?: string;
   location?: { latitude: number, longitude: number };
   range?: number; // unit: Km

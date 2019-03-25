@@ -13,7 +13,7 @@ let sampleUser: any = {
 
 let samplePlace: any = {
   name: '우리동네댕댕이',
-  label: 'CAFE',
+  label: '카페',
   location: { type: 'Point', coordinates: [127.027021, 37.498289] },
   contact: '010-3421-9271',
   address: '서울특별시 강남구 역삼동 821',

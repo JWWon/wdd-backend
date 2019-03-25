@@ -27,7 +27,7 @@ const generatePlace = () => ({
     '일구야 놀자',
     '몽구쓰',
   ]),
-  label: sample(['CAFE', 'SHOP', 'HOSPITAL', 'OTHER']),
+  label: sample(['카페', '용품', '병원', '기타']),
   location: { type: 'Point', coordinates: randCoord(center) },
   contact: '010-3421-9271',
   address: `서울특별시 강남구 ${sample([
@@ -87,7 +87,7 @@ describe('GET /places', () => {
   });
 
   it('should get places by label', async () => {
-    const label = 'CAFE';
+    const label = '카페';
     const res = await request(server.getInstance())
       .get('/places')
       .query({ label });
