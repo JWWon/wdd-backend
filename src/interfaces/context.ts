@@ -12,4 +12,5 @@ export interface Context<Body = null, Query = null, Params = null> extends Ctx {
   user: InstanceType<User>;
   request: Request<Body, Query>;
   params: Params;
+  state: any;
 }

@@ -19,9 +19,12 @@ let sampleDog: any = {
 };
 
 beforeAll(async () => {
-  const drop = await Dog.collection.drop();
-  if (drop) {
-    log.info('Dropped Dog Collection', { scope: 'mongoose' });
+  try {
+    if (await Dog.collection.drop()) {
+      log.info('Dropped Dog Collection', { scope: 'mongoose' });
+    }
+  } catch (e) {
+    log.debug('Collection not exist', { scope: 'mongoose' });
   }
 });
 

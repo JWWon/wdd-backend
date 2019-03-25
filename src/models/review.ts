@@ -8,7 +8,7 @@ export class Review extends Typegoose {
   user!: Schema.Types.ObjectId;
   @prop({ required: true, index: true, ref: 'Place' })
   place!: Schema.Types.ObjectId;
-  @prop({ required: true, min: 0, max: 0 })
+  @prop({ required: true, min: 0, max: 5 })
   rating!: number;
   @prop()
   description?: string;
