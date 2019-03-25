@@ -47,14 +47,14 @@ export function createServer() {
   connectDB();
 
   // Create app
-  app.container = configureContainer();
+  const container = configureContainer();
   app
     .use(errorHandler)
     .use(compress())
     .use(respond())
     .use(cors())
     .use(bodyParser())
-    .use(scopePerRequest(app.container))
+    .use(scopePerRequest(container))
     .use(loadControllers('../routes/*.{ts,js}', { cwd: __dirname }))
     .use(notFoundHandler);
 

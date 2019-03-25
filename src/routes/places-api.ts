@@ -94,6 +94,11 @@ const api = ({ Place }: Model) => ({
     }
     return ctx.ok(places);
   },
+  get: async (ctx: Context<null, null, Params>) => {
+    const place = await Place.findById(ctx.params.id);
+    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
+    return ctx.ok(place);
+  },
   update: async (ctx: Context<Instance, null, Params>) => {
     const { body } = ctx.request;
     const place = await Place.findById(ctx.params.id);
@@ -135,6 +140,7 @@ export default createController(api)
   .prefix('/places')
   .post('', 'create')
   .get('', 'search')
+  .get('/:id', 'get')
   .patch('/:id', 'update')
   .delete('/:id', 'delete')
   .get('/:id/likes', 'getPlacesByLike', { before: [loadUser] })

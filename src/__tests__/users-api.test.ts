@@ -16,12 +16,8 @@ let sampleUser: any = {
 const password = sample(['thisispassword', 'hellomyoldspo']);
 
 beforeAll(async () => {
-  try {
-    if (await User.collection.drop()) {
-      log.info('Dropped User Collection', { scope: 'mongoose' });
-    }
-  } catch (e) {
-    log.debug('Collection not exist', { scope: 'mongoose' });
+  if (await User.collection.drop()) {
+    log.info('Dropped User Collection', { scope: 'mongoose' });
   }
 });
 

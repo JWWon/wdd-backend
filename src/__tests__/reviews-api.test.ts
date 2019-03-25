@@ -28,16 +28,12 @@ let samplePlace: any = {
 };
 
 let sampleReview: any = {
-  rating: 4,
+  rating: Math.round(Math.random() * 5),
 };
 
 beforeAll(async () => {
-  try {
-    if (await Review.collection.drop()) {
-      log.info('Dropped Review Collection', { scope: 'mongoose' });
-    }
-  } catch (e) {
-    log.debug('Collection not exist', { scope: 'mongoose' });
+  if (await Review.collection.drop()) {
+    log.info('Dropped Review Collection', { scope: 'mongoose' });
   }
 });
 
@@ -75,5 +71,39 @@ describe('POST /reviews', () => {
     expect(res.body).toEqual(expect.objectContaining(sampleReview));
     expect(res.status).toBe(201);
     sampleReview = res.body;
+  });
+
+  it('should get right rating', async () => {
+    const res = await request(server.getInstance()).get(
+      `/places/${samplePlace._id}`
+    );
+    expect(res.body).toEqual(
+      expect.objectContaining({ rating: sampleReview.rating })
+    );
+    samplePlace = res.body;
+  });
+});
+
+describe('GET /reviews', () => {
+  it('should get reviews by place', async () => {
+    const place = samplePlace._id;
+    const res = await request(server.getInstance())
+      .get('/reviews')
+      .query({ place });
+    res.body.forEach((data: any) => {
+      expect(data).toEqual(expect.objectContaining({ place }));
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('should get reviews by user', async () => {
+    const user = sampleUser._id;
+    const res = await request(server.getInstance())
+      .get('/reviews')
+      .query({ user });
+    res.body.forEach((data: any) => {
+      expect(data).toEqual(expect.objectContaining({ user }));
+    });
+    expect(res.status).toBe(200);
   });
 });

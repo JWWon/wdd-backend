@@ -47,12 +47,8 @@ const generatePlace = () => ({
 });
 
 beforeAll(async () => {
-  try {
-    if (await Place.collection.drop()) {
-      log.info('Dropped Place Collection', { scope: 'mongoose' });
-    }
-  } catch (e) {
-    log.debug('Collection not exist', { scope: 'mongoose' });
+  if (await Place.collection.drop()) {
+    log.info('Dropped Place Collection', { scope: 'mongoose' });
   }
 });
 
