@@ -82,14 +82,16 @@ const api = ({ Place }: Model) => ({
         },
       };
     }
-    const places: Instance[] = await Place.find(query).lean();
+    const places: Instance[] = await Place.find(query)
+      .sort({ rating: 1 })
+      .lean();
     if (q.location) {
       const coord = latLngToCoord(q.location);
       const placesWithDist: PlaceWithDist[] = places.map(place => ({
         ...place,
         distance: calcDistance(coord, place.location.coordinates),
       }));
-      return ctx.ok(orderBy(placesWithDist, 'distance', 'asc'));
+      return ctx.ok(placesWithDist);
     }
     return ctx.ok(places);
   },
@@ -112,7 +114,7 @@ const api = ({ Place }: Model) => ({
     await place.remove();
     return ctx.noContent({ message: 'Place Deleted' });
   },
-  getPlacesByLike: async (ctx: Context<null>) => {
+  getByLikeUser: async (ctx: Context<null>) => {
     return ctx.ok(await Place.find({ likes: ctx.user._id }));
   },
   doLike: async (ctx: Context<null, null, Params>) => {
@@ -142,6 +144,6 @@ export default createController(api)
   .get('/:id', 'get')
   .patch('/:id', 'update')
   .delete('/:id', 'delete')
-  .get('/:id/likes', 'getPlacesByLike', { before: [loadUser] })
+  .get('/:id/likes', 'getByLikeUser', { before: [loadUser] })
   .post('/:id/likes', 'doLike', { before: [loadUser] })
   .delete('/:id/likes', 'doLike', { before: [loadUser] });

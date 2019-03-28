@@ -36,12 +36,11 @@ Koa.js + Typescript + MongoDB + Docker
 > _TODO_ Extract mongo from docker-compose & deploy as another instance
 
 1. `..$ git clone https://github.com/JWWon/wdd-backend.git`
-2. `..$ npm install`
-3. `..$ cd wdd-backend`
-4. `../wdd-backend$ chmod +x ./docker-config.sh`
-5. `../wdd-backend$ ./docker-config.sh`
-6. `docker-compose build`
-7. `docker-compose up -d`
+2. `..$ cd wdd-backend`
+3. `../wdd-backend$ chmod +x ./docker-config.sh`
+4. `../wdd-backend$ ./docker-config.sh`
+5. `docker-compose build`
+6. `docker-compose up -d`
 
 ### Update (on server)
 

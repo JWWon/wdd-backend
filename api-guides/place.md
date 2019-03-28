@@ -44,9 +44,9 @@ interface PlaceWithDist extends Place {
 
 ```javascript
 {
-  // parse as string(use JSON.stringify())
   label?: '카페' | '용품' | '병원' | '기타';
   keyword?: string;
+  // parse as string(use JSON.stringify())
   location?: { latitude: number, longitude: number };
   range?: number; // unit: Km
 }
