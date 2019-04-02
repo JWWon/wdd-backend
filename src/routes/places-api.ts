@@ -1,7 +1,7 @@
 import { createController } from 'awilix-koa';
 import { Conflict, NotFound } from 'fejl';
 import * as Hangul from 'hangul-js';
-import { find, findIndex, flatten, orderBy } from 'lodash';
+import { find, findIndex } from 'lodash';
 import { Context } from '../interfaces/context';
 import { ClassInstance, Model } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
