@@ -13,8 +13,6 @@ interface OfficeHour {
 export class Place extends Typegoose {
   @prop({ required: true })
   name!: string;
-  @prop()
-  query!: string;
   @prop({ required: true })
   location!: ClassInstance<Location>;
   @prop({ required: true })
@@ -28,7 +26,11 @@ export class Place extends Typegoose {
   @prop()
   thumbnail!: string;
   @prop()
+  query!: string; // disassemble korean for search
+  @prop()
   officeHour?: OfficeHour;
+  @prop()
+  icon?: string;
   @arrayProp({ items: String })
   images?: string[];
   @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User', default: [] })
