@@ -1,7 +1,5 @@
 import { pick } from 'lodash';
 import request from 'supertest';
-import log from '../lib/log';
-import Review from '../models/review';
 import { server } from './api-helper';
 import { generatePlace } from './places-api.test';
 // tslint:disable:max-line-length
@@ -18,12 +16,6 @@ let samplePlace: any = generatePlace();
 let sampleReview: any = {
   rating: Math.round(Math.random() * 5),
 };
-
-beforeAll(async () => {
-  if (await Review.collection.drop()) {
-    log.info('Dropped Review Collection', { scope: 'mongoose' });
-  }
-});
 
 describe('POST /reviews', () => {
   it('should get token from User', async () => {

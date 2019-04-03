@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 import { arrayProp, index, prop, Typegoose } from 'typegoose';
-import { ClassInstance } from '../interfaces/model';
+import { PureInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
 
 interface OfficeHour {
@@ -14,7 +14,7 @@ export class Place extends Typegoose {
   @prop({ required: true })
   name!: string;
   @prop({ required: true })
-  location!: ClassInstance<Location>;
+  location!: PureInstance<Location>;
   @prop({ required: true })
   address!: string; // Road Address
   @prop({ default: '기타' })

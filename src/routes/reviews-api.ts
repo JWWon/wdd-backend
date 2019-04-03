@@ -1,7 +1,7 @@
 import { createController } from 'awilix-koa';
 import { Conflict, NotFound } from 'fejl';
 import { Context } from '../interfaces/context';
-import { ClassInstance, Model } from '../interfaces/model';
+import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
 import Place from '../models/place';
@@ -14,7 +14,7 @@ interface Params {
 // tslint:disable:variable-name
 const updateRating = async (
   Review: Model['Review'],
-  review: ClassInstance<Class>
+  review: PureInstance<Class>
 ) => {
   const place = await Place.findById(review.place);
   NotFound.assert(place, '가게를 찾을 수 없습니다.');
@@ -29,7 +29,7 @@ const updateRating = async (
 // tslint:enable:variable-name
 
 const api = ({ Review }: Model) => ({
-  create: async (ctx: Context<ClassInstance<Class>>) => {
+  create: async (ctx: Context<PureInstance<Class>>) => {
     const { body } = ctx.request;
     hasParams(['place', 'rating'], body);
     Conflict.assert(
@@ -44,7 +44,7 @@ const api = ({ Review }: Model) => ({
     const { query } = ctx.request;
     return ctx.ok(await Review.find(query).populate('user'));
   },
-  update: async (ctx: Context<ClassInstance<Class>, null, Params>) => {
+  update: async (ctx: Context<PureInstance<Class>, null, Params>) => {
     const { body } = ctx.request;
     const review = await Review.findById(ctx.params.id);
     if (!review) return ctx.notFound('리뷰를 찾을 수 없습니다.');

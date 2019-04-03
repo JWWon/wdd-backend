@@ -1,33 +1,46 @@
 import { createController } from 'awilix-koa';
-import { findKey } from 'lodash';
 import { Context } from '../interfaces/context';
-import { ClassInstance, Model } from '../interfaces/model';
-import { hasParams } from '../lib/check-params';
+import { Model, PureInstance } from '../interfaces/model';
+import { excludeParams, hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
 import { Feed as Class } from '../models/feed';
 
-type Instance = ClassInstance<Class>;
+type Instance = PureInstance<Class>;
 
 interface Search {
-  user?: string;
+  dog?: string;
 }
 
-const api = ({ Feed }: Model) => ({
+const api = ({ Feed, Dog }: Model) => ({
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     hasParams(
       ['pins', 'seconds', 'distance', 'steps', 'pees', 'poos', 'images'],
       body
     );
-    body.user = ctx.user._id;
-    body.dog = findKey(ctx.user.dogs, dog => dog.default) as any;
-    return ctx.created(await Feed.create(body));
+    excludeParams(body, ['createdAt']);
+    const feed = await Feed.create({
+      ...body,
+      user: ctx.user._id,
+      dog: ctx.user.repDog,
+    });
+    // update Dog
+    const dog = await Dog.findById(ctx.user.repDog._id);
+    if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
+    dog.feeds.push(feed._id);
+    await dog.save();
+    // update User
+    ctx.user.repDog = dog;
+    await ctx.user.save();
+    return ctx.created(feed);
   },
   get: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
     const query: { [key: string]: any } = {};
-    if (q.user) query.user = q.user;
-    const feeds: Instance[] = await Feed.find(query).lean();
+    if (q.dog) query.dog = q.dog;
+    const feeds: Instance[] = await Feed.find(query)
+      .sort({ createdAt: 1 })
+      .lean();
     return ctx.ok(feeds);
   },
 });

@@ -3,12 +3,12 @@ import { Conflict, NotFound } from 'fejl';
 import * as Hangul from 'hangul-js';
 import { find, findIndex } from 'lodash';
 import { Context } from '../interfaces/context';
-import { ClassInstance, Model } from '../interfaces/model';
+import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
 import { Place as Class } from '../models/place';
 
-type Instance = ClassInstance<Class>;
+type Instance = PureInstance<Class>;
 
 interface LatLng {
   latitude: number;

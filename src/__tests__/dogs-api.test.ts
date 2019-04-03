@@ -1,13 +1,13 @@
 import { sample } from 'lodash';
 import request from 'supertest';
-import log from '../lib/log';
-import Dog from '../models/dog';
 import { server } from './api-helper';
 
 let sampleUser: any = {
-  email: 'wonjiwn@naver.com',
-  password: 'dnjswldns96',
+  email: 'dog@sample.com',
+  password: 'samplepassword',
   // token: string
+  // repDog: Dog
+  // dogs: { [key: string]: string }
 };
 
 let sampleDog: any = {
@@ -18,48 +18,36 @@ let sampleDog: any = {
   // user: Schema.Types.ObjectId
 };
 
-beforeAll(async () => {
-  if (await Dog.collection.drop()) {
-    log.info('Dropped Dog Collection', { scope: 'mongoose' });
-  }
-});
-
 describe('POST /dogs', () => {
-  it('should get token from User', async () => {
-    const resSignIn = await request(server.getInstance())
-      .post('/signin')
-      .send(sampleUser);
-    if (resSignIn.status === 200) {
-      sampleUser = resSignIn.body;
-    } else {
-      const resSignUp = await request(server.getInstance())
-        .post('/signup')
-        .send({ ...sampleUser, name: '원지운' });
-      expect(resSignUp.status).toBe(201);
-      sampleUser = resSignUp.body;
-    }
+  it('should create sample user', async () => {
+    const res = await request(server.getInstance())
+      .post('/signup')
+      .send({ ...sampleUser, name: '댕댕이주인' });
+    expect(res.status).toBe(201);
+    sampleUser = res.body;
   });
 
-  it('should create dog successfully', async () => {
+  it('should create dog', async () => {
     expect(sampleUser).toHaveProperty('token');
 
     // Create Dog
-    const resCreate = await request(server.getInstance())
+    const res = await request(server.getInstance())
       .post('/dogs')
       .set('authorization', sampleUser.token)
       .send(sampleDog);
-    expect(resCreate.body).toEqual(expect.objectContaining(sampleDog));
-    expect(resCreate.status).toBe(201);
-    sampleDog = resCreate.body;
+    expect(res.body).toEqual(expect.objectContaining(sampleDog));
+    expect(res.status).toBe(201);
+    sampleDog = res.body;
 
     // Check User
-    const res = await request(server.getInstance())
+    const resUser = await request(server.getInstance())
       .get('/user')
       .set('authorization', sampleUser.token);
-    expect(res.body.dogs[Object.keys(res.body.dogs)[0]]).toEqual(
-      expect.objectContaining({ name: sampleDog.name, default: true })
-    );
-    expect(res.status).toBe(200);
+    const { dogs, repDog } = resUser.body;
+    expect(dogs[Object.keys(dogs)[0]]).toBe(sampleDog.name);
+    expect(repDog).toEqual(sampleDog);
+    expect(resUser.status).toBe(200);
+    sampleUser = resUser.body;
   });
 });
 
@@ -75,13 +63,26 @@ describe('GET /dogs', () => {
   });
 });
 
-describe('PATCH /dogs/:id', () => {
-  it('should update dog successfully', async () => {
+describe('GET /dogs/:id', () => {
+  it('should get single dog', async () => {
     expect(sampleUser).toHaveProperty('token');
 
+    const res = await request(server.getInstance())
+      .get(`/dogs/${sampleDog._id}`)
+      .set('authorization', sampleUser.token);
+    expect(res.body).toEqual(sampleDog);
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('PATCH /dogs/:id', () => {
+  it('should update dog', async () => {
+    expect(sampleUser).toHaveProperty('token');
+
+    // Update Dog
     const updateData = {
-      thumbnail: 'https://www.example.com/image.png',
-      name: '테스트 댕댕이',
+      thumbnail: 'https://picsum.photos/800/800/?random',
+      name: '댕댕쓰',
     };
     const res = await request(server.getInstance())
       .patch(`/dogs/${sampleDog._id}`)
@@ -89,5 +90,61 @@ describe('PATCH /dogs/:id', () => {
       .send(updateData);
     expect(res.body).toEqual(expect.objectContaining(updateData));
     expect(res.status).toBe(200);
+    sampleDog = res.body;
+
+    // Check User
+    const resUser = await request(server.getInstance())
+      .get('/user')
+      .set('authorization', sampleUser.token);
+    const { dogs } = resUser.body;
+    expect(dogs[Object.keys(dogs)[0]]).toBe(sampleDog.name);
+    expect(resUser.status).toBe(200);
+    sampleUser = resUser.body;
+  });
+});
+
+describe('PUT /dogs/:id', () => {
+  let anotherDog = { name: '새댕댕이', breed: '치와와', gender: 'N' };
+
+  it('should create another dog', async () => {
+    expect(sampleUser).toHaveProperty('token');
+
+    // Create Dog
+    const res = await request(server.getInstance())
+      .post('/dogs')
+      .set('authorization', sampleUser.token)
+      .send(anotherDog);
+    expect(res.body).toEqual(expect.objectContaining(anotherDog));
+    expect(res.status).toBe(201);
+    anotherDog = res.body;
+
+    // Check User
+    const resUser = await request(server.getInstance())
+      .get('/user')
+      .set('authorization', sampleUser.token);
+    const { dogs, repDog } = resUser.body;
+    expect(dogs[Object.keys(dogs)[1]]).toBe(anotherDog.name);
+    expect(repDog).toEqual(anotherDog);
+    expect(resUser.status).toBe(200);
+    sampleUser = resUser.body;
+  });
+
+  it('should change represent dog', async () => {
+    expect(sampleUser).toHaveProperty('token');
+
+    // Change RepDog
+    const res = await request(server.getInstance())
+      .put(`/dogs/${sampleDog._id}`)
+      .set('authorization', sampleUser.token);
+    expect(res.body).toEqual(sampleDog);
+    expect(res.status).toBe(200);
+
+    // Check User
+    const resUser = await request(server.getInstance())
+      .get('/user')
+      .set('authorization', sampleUser.token);
+    expect(resUser.body.repDog).toEqual(sampleDog);
+    expect(res.status).toBe(200);
+    sampleUser = resUser.body;
   });
 });

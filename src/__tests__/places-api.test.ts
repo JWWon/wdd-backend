@@ -1,7 +1,5 @@
 import { sample } from 'lodash';
 import request from 'supertest';
-import log from '../lib/log';
-import Place from '../models/place';
 import { server } from './api-helper';
 // tslint:disable:max-line-length
 
@@ -67,12 +65,6 @@ export const generatePlace = () => ({
     'https://picsum.photos/800/800/?random',
   ],
   rating: parseFloat((Math.random() * 5).toFixed(1)),
-});
-
-beforeAll(async () => {
-  if (await Place.collection.drop()) {
-    log.info('Dropped Place Collection', { scope: 'mongoose' });
-  }
 });
 
 describe('POST /places', () => {

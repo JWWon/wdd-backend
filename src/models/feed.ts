@@ -1,11 +1,12 @@
 import { Schema } from 'mongoose';
-import { arrayProp, prop, Typegoose } from 'typegoose';
+import { arrayProp, InstanceType, prop, Typegoose } from 'typegoose';
+import { Dog } from './dog';
 
 export class Feed extends Typegoose {
   @prop({ required: true, ref: 'User' })
   user!: Schema.Types.ObjectId;
-  @prop({ required: true, ref: 'Dog' })
-  dog!: Schema.Types.ObjectId;
+  @prop({ required: true, index: true })
+  dog!: InstanceType<Dog>;
   @prop({ required: true })
   pins!: string; // JSON.stringify()
   @prop({ required: true, min: 0 })
@@ -18,6 +19,8 @@ export class Feed extends Typegoose {
   pees!: number;
   @prop()
   poos!: number;
+  @prop({ default: Date.now })
+  createdAt!: Date;
   @prop()
   memo?: string;
   @arrayProp({ items: String })

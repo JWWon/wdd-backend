@@ -1,7 +1,5 @@
-import { NotFound } from 'fejl';
 import { Schema } from 'mongoose';
-import { arrayProp, ModelType, prop, staticMethod, Typegoose } from 'typegoose';
-import { hasParams } from '../lib/check-params';
+import { arrayProp, prop, Typegoose } from 'typegoose';
 
 export class Dog extends Typegoose {
   @prop({ index: true, ref: 'User' })
@@ -20,18 +18,10 @@ export class Dog extends Typegoose {
   weight?: number;
   @prop()
   info?: string;
-  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Feed' })
-  feeds?: Schema.Types.ObjectId[];
-  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Dog' })
-  likes?: Schema.Types.ObjectId[];
-
-  @staticMethod
-  static async findByParams(this: ModelType<Dog>, params: { id: string }) {
-    hasParams(['id'], params);
-    const dog = await this.findById(params.id);
-    NotFound.assert(dog, '댕댕이를 찾을 수 없습니다.');
-    return dog;
-  }
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Feed', default: [] })
+  feeds!: Schema.Types.ObjectId[];
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Dog', default: [] })
+  likes!: Schema.Types.ObjectId[];
 }
 
 const dogModel = new Dog().getModelForClass(Dog);

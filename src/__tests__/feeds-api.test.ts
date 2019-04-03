@@ -1,7 +1,5 @@
-import { sample } from 'lodash';
+import { omit, sample } from 'lodash';
 import request from 'supertest';
-import log from '../lib/log';
-import Feed from '../models/feed';
 import { server } from './api-helper';
 
 let sampleUser: any = {
@@ -33,28 +31,21 @@ let sampleFeed: any = {
   ],
 };
 
-beforeAll(async () => {
-  if (await Feed.collection.drop()) {
-    log.info('Dropped Feed Collection', { scope: 'mongoose' });
-  }
-});
-
 describe('POST /feeds', () => {
   it('should create sample user', async () => {
     const res = await request(server.getInstance())
       .post('/signup')
       .send(sampleUser);
     expect(res.body).toEqual(
-      expect.objectContaining({
-        email: sampleUser.email,
-        name: sampleUser.name,
-      })
+      expect.objectContaining(omit(sampleUser, ['password']))
     );
     expect(res.status).toBe(201);
     sampleUser = res.body;
   });
 
   it('should add dog successfully', async () => {
+    expect(sampleUser).toHaveProperty('token');
+
     const resDog = await request(server.getInstance())
       .post('/dogs')
       .set('authorization', sampleUser.token)
@@ -67,9 +58,7 @@ describe('POST /feeds', () => {
     const res = await request(server.getInstance())
       .get('/user')
       .set('authorization', sampleUser.token);
-    expect(res.body.dogs[Object.keys(res.body.dogs)[0]]).toEqual(
-      expect.objectContaining({ name: sampleDog.name, default: true })
-    );
+    expect(res.body.repDog).toEqual(sampleDog);
     expect(res.status).toBe(200);
     sampleUser = res.body;
   });
@@ -83,7 +72,7 @@ describe('POST /feeds', () => {
       expect.objectContaining({
         ...sampleFeed,
         user: sampleUser._id,
-        dog: sampleDog._id,
+        dog: sampleDog,
       })
     );
     expect(res.status).toBe(201);
