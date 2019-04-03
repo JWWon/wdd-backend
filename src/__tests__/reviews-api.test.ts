@@ -7,8 +7,9 @@ import { generatePlace } from './places-api.test';
 // tslint:disable:max-line-length
 
 let sampleUser: any = {
-  email: 'hello@there.com',
+  email: 'review@sample.com',
   password: 'thisiswoodongdang',
+  name: '리뷰왕',
   // token: string
 };
 
@@ -26,18 +27,11 @@ beforeAll(async () => {
 
 describe('POST /reviews', () => {
   it('should get token from User', async () => {
-    const resSignIn = await request(server.getInstance())
-      .post('/signin')
+    const res = await request(server.getInstance())
+      .post('/signup')
       .send(sampleUser);
-    if (resSignIn.status === 200) {
-      sampleUser = resSignIn.body;
-    } else {
-      const resSignUp = await request(server.getInstance())
-        .post('/signup')
-        .send({ ...sampleUser, name: '원지운' });
-      expect(resSignUp.status).toBe(201);
-      sampleUser = resSignUp.body;
-    }
+    expect(res.status).toBe(201);
+    sampleUser = res.body;
   });
 
   it('should create random place', async () => {

@@ -5,11 +5,7 @@ import User from '../models/user';
 import { server } from './api-helper';
 
 let sampleUser: any = {
-  email: `${sample(['baemin', 'example', 'lalala'])}@${sample([
-    'naver.com',
-    'gmail.com',
-    'daum.net',
-  ])}`,
+  email: `${sample(['baemin', 'example', 'lalala'])}@sample.com}`,
   name: '테스트계정임다',
   // token: string
 };
