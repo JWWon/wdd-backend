@@ -5,15 +5,11 @@ import { find, findIndex } from 'lodash';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
+import { calcDistance, queryLocation, strToCoord } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import { Place as Class } from '../models/place';
 
 type Instance = PureInstance<Class>;
-
-interface LatLng {
-  latitude: number;
-  longitude: number;
-}
 
 interface Search {
   keyword?: string;
@@ -28,25 +24,6 @@ interface PlaceWithDist extends Instance {
 
 interface Params {
   id: string;
-}
-
-const MAX_DISTANCE = 300;
-
-// Helpers
-function latLngToCoord(location: string) {
-  const { latitude, longitude }: LatLng = JSON.parse(location);
-  return [longitude, latitude];
-}
-
-function calcDistance(posX: number[], posY: number[]) {
-  const p = 0.017453292519943295; // Math.PI / 180
-  const c = Math.cos;
-  const a =
-    0.5 -
-    c((posY[1] - posX[1]) * p) / 2 +
-    (c(posX[1] * p) * c(posY[1] * p) * (1 - c((posY[0] - posX[0]) * p))) / 2;
-
-  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
 }
 
 function disassembleKorean(text: string) {
@@ -72,24 +49,19 @@ const api = ({ Place }: Model) => ({
       query.query = { $regex: disassembleKorean(q.keyword), $options: 'g' };
     }
     if (q.location) {
-      query.location = {
-        $near: {
-          $maxDistance: q.range ? parseFloat(q.range) * 1000 : MAX_DISTANCE,
-          $geometry: {
-            type: 'Point',
-            coordinates: latLngToCoord(q.location),
-          },
-        },
-      };
+      query.location = queryLocation(strToCoord(q.location), q.range);
     }
     const places: Instance[] = await Place.find(query)
       .sort({ rating: 1 })
       .lean();
     if (q.location) {
-      const coord = latLngToCoord(q.location);
+      const { location } = q;
       const placesWithDist: PlaceWithDist[] = places.map(place => ({
         ...place,
-        distance: calcDistance(coord, place.location.coordinates),
+        distance: calcDistance(
+          strToCoord(location),
+          place.location.coordinates
+        ),
       }));
       return ctx.ok(placesWithDist);
     }

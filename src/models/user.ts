@@ -2,10 +2,13 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
+import { PureInstance } from '../interfaces/model';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
+import { Location } from './schemas/location';
 import {
+  index,
   instanceMethod,
   InstanceType,
   ModelType,
@@ -25,6 +28,7 @@ export interface Serialized
     | 'lastLogin'
     | 'repDog'
     | 'dogs'
+    | 'location'
   > {
   token: string;
 }
@@ -33,6 +37,7 @@ export async function hashPassword(password: string) {
   return await hash(password, 10);
 }
 
+@index({ location: '2dsphere' })
 export class User extends Typegoose {
   @prop({ required: true, unique: true, index: true, validate: isEmailVaild })
   email!: string; // unique
@@ -54,6 +59,8 @@ export class User extends Typegoose {
   repDog!: InstanceType<Dog>;
   @prop({ default: {} })
   dogs!: { [id: string]: string }; // { _id: name }
+  @prop({ default: { type: 'Point', coordinates: [0, 0] } })
+  location!: PureInstance<Location>;
 
   @staticMethod
   static async checkExist(
@@ -78,6 +85,7 @@ export class User extends Typegoose {
         'lastLogin',
         'repDog',
         'dogs',
+        'location',
       ]),
       token: jwt.sign(pick(this, ['_id', 'email']), env.SECRET),
     };

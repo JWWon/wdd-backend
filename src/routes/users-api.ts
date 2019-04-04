@@ -5,13 +5,22 @@ import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
+import { calcDistance, queryLocation, strToCoord } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import { hashPassword, User as Class } from '../models/user';
 
-type UserInterface = PureInstance<
+type Instance = PureInstance<
   Class,
   'serialize' | 'updateLoginStamp' | 'checkPassword' | 'addDog' | 'updateDog'
 >;
+
+interface UserWithDist extends Instance {
+  distance: number;
+}
+
+interface Search {
+  location: string;
+}
 
 const api = ({ User }: Model) => ({
   signIn: async (ctx: Context<{ email: string; password: string }>) => {
@@ -57,7 +66,7 @@ const api = ({ User }: Model) => ({
     await ctx.user.updateLoginStamp();
     return ctx.ok(ctx.user.serialize());
   },
-  update: async (ctx: Context<UserInterface>) => {
+  update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     excludeParams(body, ['lastLogin', 'createdAt', 'repDog', 'dogs']);
     if ('password' in body) body.password = await hash(body.password, 10);
@@ -70,6 +79,21 @@ const api = ({ User }: Model) => ({
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.noContent({ message: 'User Terminated' });
   },
+  search: async (ctx: Context<null, Search>) => {
+    const { query } = ctx.request;
+    hasParams(['location'], query);
+    const users: Instance[] = await User.find({
+      location: queryLocation(strToCoord(query.location)),
+    });
+    const usersWithDist: UserWithDist[] = users.map(user => ({
+      ...user,
+      distance: calcDistance(
+        strToCoord(query.location),
+        user.location.coordinates
+      ),
+    }));
+    return ctx.ok(usersWithDist);
+  },
 });
 
 export default createController(api)
@@ -78,4 +102,5 @@ export default createController(api)
   .post('/forgot-password', 'forgotPassword')
   .get('/user', 'get', { before: [loadUser] })
   .patch('/user', 'update', { before: [loadUser] })
-  .delete('/user', 'delete', { before: [loadUser] });
+  .delete('/user', 'delete', { before: [loadUser] })
+  .get('/user/search', 'search');

@@ -14,6 +14,15 @@ let sampleUser: UserInstance = {
 };
 const password = sample(['thisispassword', 'samplepassword']);
 
+const center = [127.027021, 37.498289];
+const LATITUDE = 0.02;
+const LONGITUDE = 0.01;
+
+const randCoord = (center: number[]) => [
+  center[0] + Math.random() * LATITUDE * 2 - LATITUDE,
+  center[1] + Math.random() * LONGITUDE * 2 - LONGITUDE,
+];
+
 describe('POST /signup', () => {
   it('should create user', async () => {
     const res = await request(server.getInstance())
@@ -76,6 +85,17 @@ describe('PATCH /user', () => {
       .set('authorization', (sampleUser as PureInstance<Serialized>).token)
       .send({ password });
     expect(res.status).toBe(200);
+  });
+
+  it('should update location', async () => {
+    const location = { type: 'Point', coordinates: randCoord(center) };
+    const res = await request(server.getInstance())
+      .patch('/user')
+      .set('authorization', (sampleUser as PureInstance<Serialized>).token)
+      .send({ location });
+    expect(res.body.location).toEqual(location);
+    expect(res.status).toBe(200);
+    sampleUser = res.body;
   });
 });
 
