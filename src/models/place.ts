@@ -2,6 +2,7 @@ import { Schema } from 'mongoose';
 import { arrayProp, index, prop, Typegoose } from 'typegoose';
 import { PureInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
+import { Scrap } from './schemas/scrap';
 
 interface OfficeHour {
   default: string;
@@ -33,8 +34,8 @@ export class Place extends Typegoose {
   icon?: string;
   @arrayProp({ items: String })
   images?: string[];
-  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User', default: [] })
-  likes!: Schema.Types.ObjectId[];
+  @arrayProp({ items: Object, default: [] })
+  scraps!: PureInstance<Scrap>[];
 }
 
 const placeModel = new Place().getModelForClass(Place);

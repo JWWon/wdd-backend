@@ -2,12 +2,14 @@ import { compare, hash } from 'bcrypt';
 import { Forbidden, NotAuthenticated } from 'fejl';
 import jwt from 'jsonwebtoken';
 import { pick } from 'lodash';
+import { Schema } from 'mongoose';
 import { PureInstance } from '../interfaces/model';
 import env from '../lib/env';
 import { isEmailVaild } from '../lib/validate';
 import { Dog } from './dog';
 import { Location } from './schemas/location';
 import {
+  arrayProp,
   index,
   instanceMethod,
   InstanceType,
@@ -61,6 +63,8 @@ export class User extends Typegoose {
   dogs!: { [id: string]: string }; // { _id: name }
   @prop({ default: { type: 'Point', coordinates: [0, 0] } })
   location!: PureInstance<Location>;
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Place', default: [] })
+  places!: Schema.Types.ObjectId[];
 
   @staticMethod
   static async checkExist(

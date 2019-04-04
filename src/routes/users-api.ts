@@ -68,7 +68,7 @@ const api = ({ User }: Model) => ({
   },
   update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
-    excludeParams(body, ['lastLogin', 'createdAt', 'repDog', 'dogs']);
+    excludeParams(body, ['lastLogin', 'createdAt', 'repDog', 'dogs', 'places']);
     if ('password' in body) body.password = await hash(body.password, 10);
     ctx.user = Object.assign(ctx.user, body);
     await ctx.user.save({ validateBeforeSave: true });

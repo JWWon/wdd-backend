@@ -1,6 +1,8 @@
 import Koa from 'koa';
 import { Context as Ctx } from 'koa-respond';
 import { InstanceType } from 'typegoose';
+import { Dog } from '../models/dog';
+import { Place } from '../models/place';
 import { User } from '../models/user';
 
 interface Request<B, Q> extends Koa.Request {
@@ -12,5 +14,8 @@ export interface Context<Body = null, Query = null, Params = null> extends Ctx {
   user: InstanceType<User>;
   request: Request<Body, Query>;
   params: Params;
-  state: any;
+  state: {
+    dog: InstanceType<Dog>;
+    place: InstanceType<Place>;
+  };
 }

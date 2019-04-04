@@ -7,7 +7,7 @@ import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
 import { calcDistance, queryLocation, strToCoord } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
-import { Place as Class } from '../models/place';
+import Table, { Place as Class } from '../models/place';
 
 type Instance = PureInstance<Class>;
 
@@ -32,6 +32,15 @@ function disassembleKorean(text: string) {
 
 function createQuery(place: Instance) {
   return disassembleKorean([place.name, place.address].join(''));
+}
+
+// middleware
+async function loadPlace(ctx: Context<null, null, Params>, next: any) {
+  const place = await Table.findById(ctx.params.id);
+  NotFound.assert(place, '가게를 찾을 수 없습니다.');
+  if (!place) return;
+  ctx.state.place = place;
+  await next();
 }
 
 const api = ({ Place }: Model) => ({
@@ -67,44 +76,43 @@ const api = ({ Place }: Model) => ({
     }
     return ctx.ok(places);
   },
-  get: async (ctx: Context<null, null, Params>) => {
-    const place = await Place.findById(ctx.params.id);
-    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
-    return ctx.ok(place);
+  get: async (ctx: Context) => {
+    return ctx.ok(ctx.state.place);
   },
   update: async (ctx: Context<Instance, null, Params>) => {
     const { body } = ctx.request;
-    const place = await Place.findById(ctx.params.id);
-    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
-    const updatePlace = Object.assign(place, body);
+    const updatePlace = Object.assign(ctx.state.place, body);
     updatePlace.query = createQuery(updatePlace);
     return ctx.ok(await updatePlace.save({ validateBeforeSave: true }));
   },
-  delete: async (ctx: Context<null, null, Params>) => {
-    const place = await Place.findById(ctx.params.id);
-    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
-    await place.remove();
+  delete: async (ctx: Context) => {
+    await ctx.state.place.remove();
     return ctx.noContent({ message: 'Place Deleted' });
   },
-  getByLikeUser: async (ctx: Context<null>) => {
-    return ctx.ok(await Place.find({ likes: ctx.user._id }));
-  },
-  doLike: async (ctx: Context<null, null, Params>) => {
-    const place = await Place.findById(ctx.params.id);
-    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
+  scrap: async (ctx: Context) => {
+    const { place } = ctx.state;
     Conflict.assert(
-      find(place.likes, like => like === ctx.user._id),
-      '이미 좋아요를 눌렀습니다.'
+      find(ctx.user.places, place => place === ctx.state.place._id),
+      '해당 가게를 이미 스크랩했습니다.'
     );
-    place.likes.push(ctx.user._id);
+    place.scraps.push({ user: ctx.user._id, createdAt: new Date() });
+    place.markModified('scraps');
+    ctx.user.places.push(place._id);
+    await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await place.save({ validateBeforeSave: true }));
   },
-  undoLike: async (ctx: Context<null, null, Params>) => {
-    const place = await Place.findById(ctx.params.id);
-    if (!place) return ctx.notFound('가게를 찾을 수 없습니다.');
-    const index = findIndex(place.likes, like => like === ctx.user._id);
-    NotFound.assert(index > -1, '좋아요를 누르지 않았습니다.');
-    place.likes.splice(index, 1);
+  unScrap: async (ctx: Context) => {
+    const { place } = ctx.state;
+    const placeIndex = findIndex(ctx.user.places, scrap => scrap === place._id);
+    NotFound.assert(placeIndex > -1, '해당 가게를 스크랩한 기록이 없습니다.');
+    const scrapIndex = findIndex(
+      place.scraps,
+      scrap => scrap.user === ctx.user._id
+    );
+    delete place.scraps[scrapIndex];
+    place.markModified('scraps');
+    delete ctx.user.places[placeIndex];
+    await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await place.save({ validateBeforeSave: true }));
   },
 });
@@ -113,9 +121,8 @@ export default createController(api)
   .prefix('/places')
   .post('', 'create')
   .get('', 'search')
-  .get('/:id', 'get')
-  .patch('/:id', 'update')
-  .delete('/:id', 'delete')
-  .get('/:id/likes', 'getByLikeUser', { before: [loadUser] })
-  .post('/:id/likes', 'doLike', { before: [loadUser] })
-  .delete('/:id/likes', 'doLike', { before: [loadUser] });
+  .get('/:id', 'get', { before: [loadPlace] })
+  .patch('/:id', 'update', { before: [loadPlace] })
+  .delete('/:id', 'delete', { before: [loadPlace] })
+  .patch('/:id/scrap', 'scrap', { before: [loadUser, loadPlace] })
+  .delete('/:id/scrap', 'unScrap', { before: [loadUser, loadPlace] });

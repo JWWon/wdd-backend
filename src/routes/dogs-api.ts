@@ -17,6 +17,7 @@ interface Params {
 async function loadDog(ctx: Context<null, null, Params>, next: any) {
   const dog = await Table.findById(ctx.params.id);
   NotFound.assert(dog, '댕댕이를 찾을 수 없습니다.');
+  if (!dog) return;
   ctx.state.dog = dog;
   await next();
 }
@@ -34,10 +35,10 @@ const api = ({ Dog }: Model) => ({
     await ctx.user.addDog(dog);
     return ctx.created(dog);
   },
-  get: async (ctx: Context<null, null, Params>) => {
+  get: async (ctx: Context) => {
     return ctx.ok(ctx.state.dog);
   },
-  update: async (ctx: Context<Instance, null, Params>) => {
+  update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     excludeParams(body, ['user']);
     const updateDog = await Object.assign(ctx.state.dog, body).save({
@@ -46,16 +47,16 @@ const api = ({ Dog }: Model) => ({
     await ctx.user.updateDog(updateDog);
     return ctx.ok(updateDog);
   },
-  selectRep: async (ctx: Context<null, null, { id: string }>) => {
+  selectRep: async (ctx: Context) => {
     /* User 인스턴스의 'repDog'값 수정 */
     ctx.user.repDog = ctx.state.dog;
     ctx.user.markModified('repDog');
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(ctx.state.dog);
   },
-  delete: async (ctx: Context<null, null, Params>) => {
+  delete: async (ctx: Context) => {
     delete ctx.user.dogs[ctx.state.dog._id];
-    if (ctx.user.repDog._id === ctx.params.id) {
+    if (ctx.user.repDog._id === ctx.state.dog._id) {
       delete ctx.user.repDog;
       const dogKeys = Object.keys(ctx.user.dogs);
       if (dogKeys.length > 0) {
@@ -68,8 +69,8 @@ const api = ({ Dog }: Model) => ({
     await ctx.state.dog.remove();
     return ctx.noContent({ message: 'Dog Terminated' });
   },
-  pushLike: async (ctx: Context<null, null, Params>) => {
-    const dog = ctx.state.dog as InstanceType<typeof Dog>;
+  pushLike: async (ctx: Context) => {
+    const { dog } = ctx.state;
     const { _id } = ctx.user.repDog;
     // check if user send like on same day
     const likes = dog.likes

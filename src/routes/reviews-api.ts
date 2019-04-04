@@ -51,7 +51,6 @@ const api = ({ Review }: Model) => ({
     const updateReview = await Object.assign(review, body).save({
       validateBeforeSave: true,
     });
-    ctx.state = { review: updateReview }; // pass state for middleware
     await updateRating(Review, updateReview);
     return ctx.ok(Object.assign(updateReview, { user: ctx.user }));
   },

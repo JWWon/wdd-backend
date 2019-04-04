@@ -67,6 +67,8 @@ export const generatePlace = () => ({
   rating: parseFloat((Math.random() * 5).toFixed(1)),
 });
 
+let samplePlace: any = generatePlace();
+
 describe('POST /places', () => {
   it('should create multiple places successfully', async () => {
     for (let i = 0; i < DATA_LENGTH; i += 1) {
@@ -120,5 +122,29 @@ describe('GET /places', () => {
       .query({ keyword });
     expect(res.body.length).toBeGreaterThan(0);
     expect(res.status).toBe(200);
+  });
+});
+
+describe('PATCH /places/:id', () => {
+  it('should create place', async () => {
+    const res = await request(server.getInstance())
+      .post('/places')
+      .send(samplePlace);
+    expect(res.status).toBe(201);
+    samplePlace = res.body;
+  });
+
+  it('should update place', async () => {
+    const updatePlace = {
+      name: '새로운 가게',
+      rating: 5,
+      officeHour: { default: '24시간' },
+    };
+    const res = await request(server.getInstance())
+      .patch(`/places/${samplePlace._id}`)
+      .send(updatePlace);
+    expect(res.body).toEqual(expect.objectContaining(updatePlace));
+    expect(res.status).toBe(200);
+    samplePlace = res.body;
   });
 });
