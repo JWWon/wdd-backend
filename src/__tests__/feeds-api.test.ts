@@ -46,21 +46,21 @@ describe('POST /feeds', () => {
   it('should add dog successfully', async () => {
     expect(sampleUser).toHaveProperty('token');
 
-    const resDog = await request(server.getInstance())
+    const res = await request(server.getInstance())
       .post('/dogs')
       .set('authorization', sampleUser.token)
       .send(sampleDog);
-    expect(resDog.body).toEqual(expect.objectContaining(sampleDog));
-    expect(resDog.status).toBe(201);
-    sampleDog = resDog.body;
+    expect(res.body).toEqual(expect.objectContaining(sampleDog));
+    expect(res.status).toBe(201);
+    sampleDog = res.body;
 
     // Check User
-    const res = await request(server.getInstance())
+    const resUser = await request(server.getInstance())
       .get('/user')
       .set('authorization', sampleUser.token);
-    expect(res.body.repDog).toEqual(sampleDog);
-    expect(res.status).toBe(200);
-    sampleUser = res.body;
+    expect(resUser.body.repDog).toEqual(sampleDog);
+    expect(resUser.status).toBe(200);
+    sampleUser = resUser.body;
   });
 
   it('should create sample feed', async () => {
@@ -77,5 +77,21 @@ describe('POST /feeds', () => {
     );
     expect(res.status).toBe(201);
     sampleFeed = res.body;
+
+    // Check User
+    const resUser = await request(server.getInstance())
+      .get('/user')
+      .set('authorization', sampleUser.token);
+    expect(resUser.body.repDog.feeds).toEqual([sampleFeed._id]);
+    expect(resUser.status).toBe(200);
+    sampleUser = resUser.body;
+
+    // Check Dog
+    const resDog = await request(server.getInstance())
+      .get(`/dogs/${sampleDog._id}`)
+      .set('authorization', sampleUser.token);
+    expect(resDog.body.feeds).toEqual([sampleFeed._id]);
+    expect(resDog.status).toBe(200);
+    sampleDog = resDog.body;
   });
 });
