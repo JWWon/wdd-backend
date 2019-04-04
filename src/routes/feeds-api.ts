@@ -1,4 +1,5 @@
 import { createController } from 'awilix-koa';
+import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
@@ -8,7 +9,8 @@ import { Feed as Class } from '../models/feed';
 type Instance = PureInstance<Class>;
 
 interface Search {
-  dog?: string;
+  dogs?: string[];
+  feeds?: string[];
 }
 
 const api = ({ Feed, Dog }: Model) => ({
@@ -37,7 +39,14 @@ const api = ({ Feed, Dog }: Model) => ({
   get: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
     const query: { [key: string]: any } = {};
-    if (q.dog) query.dog = q.dog;
+    if (q.dogs) {
+      query['dog._id'] = {
+        $in: q.dogs.map(dog => mongoose.Types.ObjectId(dog)),
+      };
+    }
+    if (q.feeds) {
+      query._id = { $in: q.feeds.map(feed => mongoose.Types.ObjectId(feed)) };
+    }
     const feeds: Instance[] = await Feed.find(query)
       .sort({ createdAt: 1 })
       .lean();

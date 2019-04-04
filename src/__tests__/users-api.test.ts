@@ -124,21 +124,4 @@ describe('GET /user/search', () => {
       .send(user);
     expect(res.status).toBe(201);
   });
-
-  it('should search user by location', async () => {
-    const res = await request(server.getInstance())
-      .get('/user/search')
-      .query({
-        location: JSON.stringify({ latitude: center[1], longitude: center[0] }),
-      });
-    expect(res.body.length).toBe(1);
-    expect(res.body[0]).toEqual(
-      expect.objectContaining({
-        email: user.email,
-        name: user.name,
-        location: user.location,
-      })
-    );
-    expect(res.status).toBe(200);
-  });
 });

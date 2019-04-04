@@ -84,6 +84,7 @@ const api = ({ User }: Model) => ({
     hasParams(['location'], query);
     const users: Instance[] = await User.find({
       location: queryLocation(strToCoord(query.location)),
+      repDog: { $exists: true },
     })
       .sort({ lastLogin: 1 })
       .lean();
