@@ -1,21 +1,31 @@
 import { createController } from 'awilix-koa';
+import { Forbidden, NotFound } from 'fejl';
+import { InstanceType } from 'typegoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
-import { Dog as Class } from '../models/dog';
+import Table, { Dog as Class } from '../models/dog';
 
-type DogInterface = PureInstance<Class>;
+type Instance = PureInstance<Class>;
 
 interface Params {
   id: string;
 }
 
-const api = ({ Dog, User }: Model) => ({
+// middleware
+async function loadDog(ctx: Context<null, null, Params>, next: any) {
+  const dog = await Table.findById(ctx.params.id);
+  NotFound.assert(dog, '댕댕이를 찾을 수 없습니다.');
+  ctx.state.dog = dog;
+  await next();
+}
+
+const api = ({ Dog }: Model) => ({
   getAll: async (ctx: Context) => {
     return ctx.ok(await Dog.find({ user: ctx.user._id }));
   },
-  create: async (ctx: Context<DogInterface>) => {
+  create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     hasParams(['name', 'breed', 'gender'], body);
     excludeParams(body, ['feeds', 'likes']);
@@ -25,16 +35,12 @@ const api = ({ Dog, User }: Model) => ({
     return ctx.created(dog);
   },
   get: async (ctx: Context<null, null, Params>) => {
-    const dog = await Dog.findById(ctx.params.id);
-    if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
-    return ctx.ok(dog);
+    return ctx.ok(ctx.state.dog);
   },
-  update: async (ctx: Context<DogInterface, null, Params>) => {
+  update: async (ctx: Context<Instance, null, Params>) => {
     const { body } = ctx.request;
     excludeParams(body, ['user']);
-    const dog = await Dog.findById(ctx.params.id);
-    if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
-    const updateDog = await Object.assign(dog, body).save({
+    const updateDog = await Object.assign(ctx.state.dog, body).save({
       validateBeforeSave: true,
     });
     await ctx.user.updateDog(updateDog);
@@ -42,17 +48,13 @@ const api = ({ Dog, User }: Model) => ({
   },
   selectRep: async (ctx: Context<null, null, { id: string }>) => {
     /* User 인스턴스의 'repDog'값 수정 */
-    const dog = await Dog.findById(ctx.params.id);
-    if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
-    ctx.user.repDog = dog;
+    ctx.user.repDog = ctx.state.dog;
     ctx.user.markModified('repDog');
     await ctx.user.save({ validateBeforeSave: true });
-    return ctx.ok(dog);
+    return ctx.ok(ctx.state.dog);
   },
   delete: async (ctx: Context<null, null, Params>) => {
-    const dog = await Dog.findById(ctx.params.id);
-    if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
-    delete ctx.user.dogs[dog._id];
+    delete ctx.user.dogs[ctx.state.dog._id];
     if (ctx.user.repDog._id === ctx.params.id) {
       delete ctx.user.repDog;
       const dogKeys = Object.keys(ctx.user.dogs);
@@ -63,8 +65,30 @@ const api = ({ Dog, User }: Model) => ({
       }
     }
     await ctx.user.save();
-    await dog.remove();
+    await ctx.state.dog.remove();
     return ctx.noContent({ message: 'Dog Terminated' });
+  },
+  pushLike: async (ctx: Context<null, null, Params>) => {
+    const dog = ctx.state.dog as InstanceType<typeof Dog>;
+    const { _id } = ctx.user.repDog;
+    // check if user send like on same day
+    if (dog.likes.length > 0) {
+      const likes = dog.likes
+        .filter(like => like.dog === _id)
+        .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime());
+      const now = new Date();
+      likes[0].createdAt.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      Forbidden.assert(
+        likes[0].createdAt.getTime() !== now.getTime(),
+        '킁킁은 하루에 한 번만 보낼 수 있습니다.'
+      );
+    }
+    // send like
+    dog.likes.push({ dog: _id, createdAt: new Date() });
+    dog.markModified('likes');
+    await dog.save({ validateBeforeSave: true });
+    return ctx.ok({ message: '킁킁을 눌렀습니다.' });
   },
 });
 
@@ -73,7 +97,8 @@ export default createController(api)
   .before([loadUser])
   .get('', 'getAll')
   .post('', 'create')
-  .get('/:id', 'get')
-  .patch('/:id', 'update')
-  .put('/:id', 'selectRep')
-  .delete('/:id', 'delete');
+  .get('/:id', 'get', { before: [loadDog] })
+  .patch('/:id', 'update', { before: [loadDog] })
+  .put('/:id', 'selectRep', { before: [loadDog] })
+  .delete('/:id', 'delete', { before: [loadDog] })
+  .patch('/:id/like', 'pushLike', { before: [loadDog] });

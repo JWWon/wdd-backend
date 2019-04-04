@@ -1,4 +1,3 @@
-import { InstanceType } from 'typegoose';
 import Dog from '../models/dog';
 import Feed from '../models/feed';
 import Place from '../models/place';
@@ -14,6 +13,6 @@ export interface Model {
 }
 
 export type PureInstance<T, P = ''> = Pick<
-  InstanceType<T>,
-  Exclude<keyof InstanceType<T>, 'getModelForClass' | 'setModelForClass' | P>
+  T,
+  Exclude<keyof T, 'getModelForClass' | 'setModelForClass' | P>
 >;

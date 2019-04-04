@@ -148,3 +148,51 @@ describe('PUT /dogs/:id', () => {
     sampleUser = resUser.body;
   });
 });
+
+describe('PATCH /dogs/:id/like', () => {
+  let user: any = {
+    email: 'anotherDog@example.com',
+    password: 'anotheruser',
+    name: 'RandomUser',
+  };
+  let dog: any = {
+    name: '새로운댕댕쓰',
+    gender: sample(['M', 'F', 'N']),
+    breed: sample(['요크셔 테리어', '골든 리트리버', '치와와', '불독']),
+  };
+
+  it('should create another user and dog', async () => {
+    // Create User
+    const resUser = await request(server.getInstance())
+      .post('/signup')
+      .send(user);
+    expect(resUser.status).toBe(201);
+    user = resUser.body;
+
+    // Create Dog
+    const resDog = await request(server.getInstance())
+      .post('/dogs')
+      .set('authorization', user.token)
+      .send(dog);
+    expect(resDog.status).toBe(201);
+    dog = resDog.body;
+  });
+
+  it('should send like', async () => {
+    const res = await request(server.getInstance())
+      .patch(`/dogs/${dog._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.body.message).toBe('킁킁을 눌렀습니다.');
+    expect(res.status).toBe(200);
+  });
+
+  it('should get like', async () => {
+    const res = await request(server.getInstance())
+      .get(`/dogs/${dog._id}`)
+      .set('authorization', user.token);
+    expect(res.body.likes[0]).toEqual(
+      expect.objectContaining({ dog: sampleUser.repDog._id })
+    );
+    expect(res.status).toBe(200);
+  });
+});
