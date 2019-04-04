@@ -31,6 +31,7 @@ export interface Serialized
     | 'repDog'
     | 'dogs'
     | 'location'
+    | 'places'
   > {
   token: string;
 }
@@ -90,6 +91,7 @@ export class User extends Typegoose {
         'repDog',
         'dogs',
         'location',
+        'places',
       ]),
       token: jwt.sign(pick(this, ['_id', 'email']), env.SECRET),
     };

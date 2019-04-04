@@ -92,26 +92,26 @@ const api = ({ Place }: Model) => ({
   scrap: async (ctx: Context) => {
     const { place } = ctx.state;
     Conflict.assert(
-      find(ctx.user.places, place => place === ctx.state.place._id),
+      find(ctx.user.places, scrap => place._id.equals(scrap)) === undefined,
       '해당 가게를 이미 스크랩했습니다.'
     );
     place.scraps.push({ user: ctx.user._id, createdAt: new Date() });
-    place.markModified('scraps');
     ctx.user.places.push(place._id);
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await place.save({ validateBeforeSave: true }));
   },
   unScrap: async (ctx: Context) => {
     const { place } = ctx.state;
-    const placeIndex = findIndex(ctx.user.places, scrap => scrap === place._id);
+    const placeIndex = findIndex(ctx.user.places, scrap =>
+      place._id.equals(scrap)
+    );
     NotFound.assert(placeIndex > -1, '해당 가게를 스크랩한 기록이 없습니다.');
     const scrapIndex = findIndex(
       place.scraps,
       scrap => scrap.user === ctx.user._id
     );
-    delete place.scraps[scrapIndex];
-    place.markModified('scraps');
-    delete ctx.user.places[placeIndex];
+    place.scraps.splice(scrapIndex, 1);
+    ctx.user.places.splice(placeIndex, 1);
     await ctx.user.save({ validateBeforeSave: true });
     return ctx.ok(await place.save({ validateBeforeSave: true }));
   },

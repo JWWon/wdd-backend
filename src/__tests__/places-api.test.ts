@@ -148,3 +148,19 @@ describe('PATCH /places/:id', () => {
     samplePlace = res.body;
   });
 });
+
+// describe('PATCH /places/:id/scrap', () => {
+//   let user: any = {
+//     email: 'place@sample.com',
+//     password: 'sampleplaceaccount',
+//     name: 'MySample',
+//   };
+
+//   it('should create sample user', async () => {
+//     const res = await request(server.getInstance())
+//       .post('/signup')
+//       .send(user);
+//     expect(res.status).toBe(201);
+//     user = res.body;
+//   });
+// });
