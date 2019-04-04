@@ -72,10 +72,10 @@ const api = ({ Dog }: Model) => ({
     const dog = ctx.state.dog as InstanceType<typeof Dog>;
     const { _id } = ctx.user.repDog;
     // check if user send like on same day
-    if (dog.likes.length > 0) {
-      const likes = dog.likes
-        .filter(like => like.dog === _id)
-        .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime());
+    const likes = dog.likes
+      .filter(like => _id.equals(like.dog))
+      .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime());
+    if (likes.length > 0) {
       const now = new Date();
       likes[0].createdAt.setHours(0, 0, 0, 0);
       now.setHours(0, 0, 0, 0);

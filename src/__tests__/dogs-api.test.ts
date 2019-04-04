@@ -195,4 +195,12 @@ describe('PATCH /dogs/:id/like', () => {
     );
     expect(res.status).toBe(200);
   });
+
+  it('cannot send like at same day', async () => {
+    const res = await request(server.getInstance())
+      .patch(`/dogs/${dog._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.body.message).toBe('킁킁은 하루에 한 번만 보낼 수 있습니다.');
+    expect(res.status).toBe(403);
+  });
 });
