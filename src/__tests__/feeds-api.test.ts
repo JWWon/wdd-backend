@@ -178,7 +178,7 @@ describe('GET /feeds', () => {
     expect(dogs.length).toBe(users.length);
     const res = await request(server.getInstance())
       .get('/feeds')
-      .query({ dogs });
+      .query({ dogs: JSON.stringify(dogs) });
     expect(res.body.length).toBeGreaterThan(0);
     expect(res.status).toBe(200);
     res.body.forEach((feed: any) => {

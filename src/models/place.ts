@@ -1,4 +1,3 @@
-import { Schema } from 'mongoose';
 import { arrayProp, index, prop, Typegoose } from 'typegoose';
 import { PureInstance } from '../interfaces/model';
 import { Location } from './schemas/location';

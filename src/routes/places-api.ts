@@ -2,6 +2,7 @@ import { createController } from 'awilix-koa';
 import { Conflict, NotFound } from 'fejl';
 import * as Hangul from 'hangul-js';
 import { find, findIndex } from 'lodash';
+import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
@@ -16,6 +17,7 @@ interface Search {
   label?: string;
   location?: string;
   range?: string; // km
+  places?: string;
 }
 
 interface PlaceWithDist extends Instance {
@@ -60,6 +62,13 @@ const api = ({ Place }: Model) => ({
     if (q.location) {
       query.location = queryLocation(strToCoord(q.location), q.range);
     }
+    if (q.places) {
+      const places: string[] = JSON.parse(q.places);
+      query._id = {
+        $in: places.map(place => mongoose.Types.ObjectId(place)),
+      };
+    }
+
     const places: Instance[] = await Place.find(query)
       .sort({ rating: 1 })
       .lean();

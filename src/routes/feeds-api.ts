@@ -9,8 +9,7 @@ import { Feed as Class } from '../models/feed';
 type Instance = PureInstance<Class>;
 
 interface Search {
-  dogs?: string[];
-  feeds?: string[];
+  dogs?: string;
 }
 
 const api = ({ Feed, Dog }: Model) => ({
@@ -40,12 +39,10 @@ const api = ({ Feed, Dog }: Model) => ({
     const { query: q } = ctx.request;
     const query: { [key: string]: any } = {};
     if (q.dogs) {
+      const dogs: string[] = JSON.parse(q.dogs);
       query['dog._id'] = {
-        $in: q.dogs.map(dog => mongoose.Types.ObjectId(dog)),
+        $in: dogs.map(dog => mongoose.Types.ObjectId(dog)),
       };
-    }
-    if (q.feeds) {
-      query._id = { $in: q.feeds.map(feed => mongoose.Types.ObjectId(feed)) };
     }
     const feeds: Instance[] = await Feed.find(query)
       .sort({ createdAt: 1 })
