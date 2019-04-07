@@ -1,6 +1,6 @@
 import { createController } from 'awilix-koa';
 import { Forbidden, NotFound } from 'fejl';
-import { InstanceType } from 'typegoose';
+import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
@@ -9,12 +9,12 @@ import Table, { Dog as Class } from '../models/dog';
 
 type Instance = PureInstance<Class>;
 
-interface Params {
-  id: string;
+interface Search {
+  dogs?: string;
 }
 
 // middleware
-async function loadDog(ctx: Context<null, null, Params>, next: any) {
+async function loadDog(ctx: Context<null, null, { id: string }>, next: any) {
   const dog = await Table.findById(ctx.params.id);
   NotFound.assert(dog, '댕댕이를 찾을 수 없습니다.');
   if (!dog) return;
@@ -23,8 +23,16 @@ async function loadDog(ctx: Context<null, null, Params>, next: any) {
 }
 
 const api = ({ Dog }: Model) => ({
-  getAll: async (ctx: Context) => {
-    return ctx.ok(await Dog.find({ user: ctx.user._id }));
+  search: async (ctx: Context<null, Search>) => {
+    const { query: q } = ctx.request;
+    const query: { [key: string]: any } = {};
+    if (q.dogs) {
+      const dogs: string[] = JSON.parse(q.dogs);
+      query['dog._id'] = {
+        $in: dogs.map(dog => mongoose.Types.ObjectId(dog)),
+      };
+    }
+    return ctx.ok(await Dog.find(query).lean());
   },
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
@@ -96,7 +104,7 @@ const api = ({ Dog }: Model) => ({
 export default createController(api)
   .prefix('/dogs')
   .before([loadUser])
-  .get('', 'getAll')
+  .get('', 'search')
   .post('', 'create')
   .get('/:id', 'get', { before: [loadDog] })
   .patch('/:id', 'update', { before: [loadDog] })
