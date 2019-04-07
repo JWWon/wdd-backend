@@ -70,7 +70,7 @@ const api = ({ Place }: Model) => ({
     }
 
     const places: Instance[] = await Place.find(query)
-      .sort({ rating: 1 })
+      .sort('-rating')
       .lean();
     if (q.location) {
       const { location } = q;

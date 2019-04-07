@@ -86,7 +86,7 @@ const api = ({ User }: Model) => ({
       location: queryLocation(strToCoord(query.location)),
       repDog: { $exists: true },
     })
-      .sort({ lastLogin: 1 })
+      .sort('-lastLogin')
       .lean();
     const usersWithDist: UserWithDist[] = users.map(user => ({
       ...user,

@@ -45,7 +45,7 @@ const api = ({ Feed, Dog }: Model) => ({
       };
     }
     const feeds: Instance[] = await Feed.find(query)
-      .sort({ createdAt: 1 })
+      .sort('-createdAt')
       .lean();
     return ctx.ok(feeds);
   },
