@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
-import { calcDistance, queryLocation, strToCoord } from '../lib/helper';
+import { calcDistance, queryLocation } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import { hashPassword, User as Class } from '../models/user';
 
@@ -19,7 +19,7 @@ interface UserWithDist extends Instance {
 }
 
 interface Search {
-  location: string;
+  coordinates: string; // [longitude, latitude]
 }
 
 const api = ({ User }: Model) => ({
@@ -81,9 +81,9 @@ const api = ({ User }: Model) => ({
   },
   search: async (ctx: Context<null, Search>) => {
     const { query } = ctx.request;
-    hasParams(['location'], query);
+    hasParams(['coordinates'], query);
     const users: Instance[] = await User.find({
-      location: queryLocation(strToCoord(query.location)),
+      location: queryLocation(JSON.parse(query.coordinates)),
       repDog: { $exists: true },
     })
       .sort('-lastLogin')
@@ -91,7 +91,7 @@ const api = ({ User }: Model) => ({
     const usersWithDist: UserWithDist[] = users.map(user => ({
       ...user,
       distance: calcDistance(
-        strToCoord(query.location),
+        JSON.parse(query.coordinates),
         user.location.coordinates
       ),
     }));
@@ -106,4 +106,4 @@ export default createController(api)
   .get('/user', 'get', { before: [loadUser] })
   .patch('/user', 'update', { before: [loadUser] })
   .delete('/user', 'delete', { before: [loadUser] })
-  .get('/user/search', 'search');
+  .get('/users', 'search');

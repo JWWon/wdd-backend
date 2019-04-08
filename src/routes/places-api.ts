@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
-import { calcDistance, queryLocation, strToCoord } from '../lib/helper';
+import { calcDistance, queryLocation } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import Table, { Place as Class } from '../models/place';
 
@@ -15,7 +15,7 @@ type Instance = PureInstance<Class>;
 interface Search {
   keyword?: string;
   label?: string;
-  location?: string;
+  coordinates?: string; // [longitude, latitude]
   range?: string; // km
   places?: string;
 }
@@ -59,8 +59,8 @@ const api = ({ Place }: Model) => ({
     if (q.keyword) {
       query.query = { $regex: disassembleKorean(q.keyword), $options: 'g' };
     }
-    if (q.location) {
-      query.location = queryLocation(strToCoord(q.location), q.range);
+    if (q.coordinates) {
+      query.location = queryLocation(JSON.parse(q.coordinates), q.range);
     }
     if (q.places) {
       const places: string[] = JSON.parse(q.places);
@@ -72,14 +72,11 @@ const api = ({ Place }: Model) => ({
     const places: Instance[] = await Place.find(query)
       .sort('-rating')
       .lean();
-    if (q.location) {
-      const { location } = q;
+    if (q.coordinates) {
+      const coordinates: number[] = JSON.parse(q.coordinates);
       const placesWithDist: PlaceWithDist[] = places.map(place => ({
         ...place,
-        distance: calcDistance(
-          strToCoord(location),
-          place.location.coordinates
-        ),
+        distance: calcDistance(coordinates, place.location.coordinates),
       }));
       return ctx.ok(placesWithDist);
     }

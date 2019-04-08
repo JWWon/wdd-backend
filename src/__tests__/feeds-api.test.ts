@@ -159,10 +159,8 @@ describe('GET /feeds', () => {
 
   it('should search users by location', async () => {
     const res = await request(server.getInstance())
-      .get('/user/search')
-      .query({
-        location: JSON.stringify({ latitude: center[1], longitude: center[0] }),
-      });
+      .get('/users')
+      .query({ coordinates: JSON.stringify(center) });
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
     res.body.forEach((user: any) => {

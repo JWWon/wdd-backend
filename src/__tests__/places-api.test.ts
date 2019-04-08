@@ -92,10 +92,7 @@ describe('GET /places', () => {
   it('should get places near 1km', async () => {
     const res = await request(server.getInstance())
       .get('/places')
-      .query({
-        location: JSON.stringify({ latitude: center[1], longitude: center[0] }),
-        range: 1,
-      });
+      .query({ coordinates: JSON.stringify(center), range: 1 });
     expect(res.body.length).toBeGreaterThan(0);
     res.body.forEach((data: any) => {
       expect(data.distance).toBeLessThan(1);

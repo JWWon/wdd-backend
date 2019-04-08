@@ -3,12 +3,6 @@ interface LatLng {
   longitude: number;
 }
 
-export function strToCoord(location: string) {
-  // location = {latitude:number,longitude:number}
-  const { latitude, longitude }: LatLng = JSON.parse(location);
-  return [longitude, latitude] as [number, number];
-}
-
 export const queryLocation = (
   coordinates: [number, number],
   range?: string
