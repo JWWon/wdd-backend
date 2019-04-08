@@ -10,6 +10,7 @@ type Instance = PureInstance<Class>;
 
 interface Search {
   dogs?: string;
+  feeds?: string;
 }
 
 const api = ({ Feed, Dog }: Model) => ({
@@ -43,6 +44,10 @@ const api = ({ Feed, Dog }: Model) => ({
       query['dog._id'] = {
         $in: dogs.map(dog => mongoose.Types.ObjectId(dog)),
       };
+    }
+    if (q.feeds) {
+      const feeds: string[] = JSON.parse(q.feeds);
+      query._id = { $in: feeds.map(feed => mongoose.Types.ObjectId(feed)) };
     }
     const feeds: Instance[] = await Feed.find(query)
       .sort('-createdAt')
