@@ -1,16 +1,27 @@
 import { createController } from 'awilix-koa';
+import { Conflict, NotFound } from 'fejl';
+import { find, findIndex } from 'lodash';
 import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
 import { loadUser } from '../middleware/load-user';
-import { Feed as Class } from '../models/feed';
+import Table, { Feed as Class } from '../models/feed';
 
 type Instance = PureInstance<Class>;
 
 interface Search {
   dogs?: string;
   feeds?: string;
+}
+
+// middleware
+async function loadPlace(ctx: Context<null, null, { id: string }>, next: any) {
+  const feed = await Table.findById(ctx.params.id);
+  NotFound.assert(feed, '피드를 찾을 수 없습니다.');
+  if (!feed) return;
+  ctx.state.feed = feed;
+  await next();
 }
 
 const api = ({ Feed, Dog }: Model) => ({
@@ -54,9 +65,29 @@ const api = ({ Feed, Dog }: Model) => ({
       .lean();
     return ctx.ok(feeds);
   },
+  like: async (ctx: Context) => {
+    const { feed } = ctx.state;
+    Conflict.assert(
+      find(feed.likes, like => ctx.user._id.equals(like.user)) === undefined,
+      '이미 좋아요를 눌렀습니다.'
+    );
+    feed.likes.push({ user: ctx.user._id, createdAt: new Date() });
+    feed.markModified('likes');
+    return ctx.ok(await feed.save({ validateBeforeSave: true }));
+  },
+  unLike: async (ctx: Context) => {
+    const { feed } = ctx.state;
+    const index = findIndex(feed.likes, like => ctx.user._id.equals(like.user));
+    NotFound.assert(index > -1, '좋아요를 누르지 않았습니다.');
+    feed.likes.splice(index, 1);
+    feed.markModified('likes');
+    return ctx.ok(await feed.save({ validateBeforeSave: true }));
+  },
 });
 
 export default createController(api)
   .prefix('/feeds')
   .post('', 'create', { before: [loadUser] })
-  .get('', 'get');
+  .get('', 'get')
+  .patch('/:id/like', 'like', { before: [loadUser, loadPlace] })
+  .delete('/:id/like', 'unLike', { before: [loadUser, loadPlace] });

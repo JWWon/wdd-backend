@@ -1,6 +1,8 @@
 import { Schema } from 'mongoose';
 import { arrayProp, InstanceType, prop, Typegoose } from 'typegoose';
+import { PureInstance } from '../interfaces/model';
 import { Dog } from './dog';
+import { UserLike } from './schemas/user-like';
 
 export class Feed extends Typegoose {
   @prop({ required: true, ref: 'User' })
@@ -25,6 +27,8 @@ export class Feed extends Typegoose {
   memo?: string;
   @arrayProp({ items: String })
   images!: string[];
+  @arrayProp({ items: Object, default: [] })
+  likes!: PureInstance<UserLike>[];
 }
 
 const feedModel = new Feed().getModelForClass(Feed);

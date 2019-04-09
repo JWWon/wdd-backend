@@ -184,3 +184,39 @@ describe('GET /feeds', () => {
     });
   });
 });
+
+describe('[PATCH] /feeds/:id/like', () => {
+  it('should push like', async () => {
+    const res = await request(server.getInstance())
+      .patch(`/feeds/${sampleFeed._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.body.likes[0]).toEqual(
+      expect.objectContaining({ user: sampleUser._id })
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('cannot push like twice', async () => {
+    const res = await request(server.getInstance())
+      .patch(`/feeds/${sampleFeed._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.status).toBe(409);
+  });
+});
+
+describe('[DELETE] /feeds/:id/like', () => {
+  it('should undo like', async () => {
+    const res = await request(server.getInstance())
+      .delete(`/feeds/${sampleFeed._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.body.likes.length).toBe(0);
+    expect(res.status).toBe(200);
+  });
+
+  it('cannot undo like twice', async () => {
+    const res = await request(server.getInstance())
+      .delete(`/feeds/${sampleFeed._id}/like`)
+      .set('authorization', sampleUser.token);
+    expect(res.status).toBe(404);
+  });
+});

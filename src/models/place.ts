@@ -1,6 +1,6 @@
 import { PureInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
-import { Scrap } from './schemas/scrap';
+import { UserLike } from './schemas/user-like';
 import {
   arrayProp,
   index,
@@ -41,7 +41,7 @@ export class Place extends Typegoose {
   @prop()
   description?: string;
   @arrayProp({ items: Object, default: [] })
-  scraps!: PureInstance<Scrap>[];
+  scraps!: PureInstance<UserLike>[];
   @arrayProp({ items: String })
   images?: string[];
 

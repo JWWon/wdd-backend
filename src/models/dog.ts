@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 import { arrayProp, prop, Typegoose } from 'typegoose';
 import { PureInstance } from '../interfaces/model';
-import { Like } from './schemas/like';
+import { DogLike } from './schemas/dog-like';
 
 export class Dog extends Typegoose {
   @prop({ index: true, ref: 'User' })
@@ -23,7 +23,7 @@ export class Dog extends Typegoose {
   @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Feed', default: [] })
   feeds!: Schema.Types.ObjectId[];
   @arrayProp({ items: Object, default: [] })
-  likes!: PureInstance<Like>[];
+  likes!: PureInstance<DogLike>[];
 }
 
 const dogModel = new Dog().getModelForClass(Dog);
