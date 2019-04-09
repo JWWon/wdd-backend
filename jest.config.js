@@ -1,13 +1,8 @@
 module.exports = {
   roots: ['<rootDir>/src'],
   collectCoverage: true,
-  collectCoverageFrom: [
-    '**/*.{ts,js}',
-    '!**/node_modules/**',
-    '!**/src/@types/**',
-    '!**/build/**',
-    '!**/coverage/**',
-  ],
+  collectCoverageFrom: ['**/{lib,middleware,models,routes}/*.{ts,js}'],
+  globalSetup: '<rootDir>/src/__tests__/drop-database.ts',
   transform: {
     '\\.ts$': 'ts-jest',
   },
@@ -25,6 +20,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   testPathIgnorePatterns: [
     'api-helper.ts',
+    'drop-database.ts',
     '/node_modules/',
     '/@types/',
     '/build/',

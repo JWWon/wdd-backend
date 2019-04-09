@@ -1,11 +1,12 @@
-import { Schema } from 'mongoose';
+import { PureInstance } from '../interfaces/model';
+import { Location } from './schemas/location';
+import { Scrap } from './schemas/scrap';
 import {
   arrayProp,
+  index,
   instanceMethod,
   InstanceType,
-  ModelType,
   prop,
-  staticMethod,
   Typegoose,
 } from 'typegoose';
 
@@ -15,27 +16,40 @@ interface OfficeHour {
   dayoff?: string;
 }
 
-interface Review {}
-
+@index({ location: '2dsphere' })
 export class Place extends Typegoose {
   @prop({ required: true })
   name!: string;
   @prop({ required: true })
+  location!: PureInstance<Location>;
+  @prop({ required: true })
   address!: string; // Road Address
+  @prop({ default: '기타' })
+  label!: '카페' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
   @prop()
+  contact!: string;
+  @prop()
+  thumbnail!: string;
+  @prop({ index: true })
+  query!: string; // disassemble korean for search
+  @prop()
   officeHour?: OfficeHour;
-  @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
-  contact?: string;
+  @prop()
+  icon?: string;
+  @prop()
+  description?: string;
+  @arrayProp({ items: Object, default: [] })
+  scraps!: PureInstance<Scrap>[];
   @arrayProp({ items: String })
-  images!: string[];
-  @arrayProp({ items: String })
-  tags!: string[];
-  @arrayProp({ items: String })
-  likes!: string[];
-  @arrayProp({ items: Object })
-  reviews!: Review[];
+  images?: string[];
+
+  @instanceMethod
+  serialize(this: InstanceType<Place>) {
+    delete this.query;
+    return this;
+  }
 }
 
 const placeModel = new Place().getModelForClass(Place);

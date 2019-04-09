@@ -1,6 +1,7 @@
 import cors from '@koa/cors';
 import { AwilixContainer } from 'awilix';
 import { loadControllers, scopePerRequest } from 'awilix-koa';
+import http from 'http';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import compress from 'koa-compress';
@@ -9,7 +10,6 @@ import mongoose from 'mongoose';
 import env from '../lib/env';
 import { errorHandler } from '../middleware/error-handler';
 import { notFoundHandler } from '../middleware/not-found-handler';
-import { tokenToUser } from '../middleware/token-to-user';
 import { configureContainer } from './container';
 import log from './log';
 
@@ -41,24 +41,23 @@ export function connectDB() {
   });
 }
 
-export async function createServer() {
+export function createServer() {
   const app: AppInterface = new Koa();
 
   connectDB();
 
   // Create app
-  app.container = configureContainer();
+  const container = configureContainer();
   app
     .use(errorHandler)
     .use(compress())
     .use(respond())
     .use(cors())
     .use(bodyParser())
-    .use(tokenToUser)
-    .use(scopePerRequest(app.container))
+    .use(scopePerRequest(container))
     .use(loadControllers('../routes/*.{ts,js}', { cwd: __dirname }))
     .use(notFoundHandler);
 
   log.debug('Server created, ready to listen', { scope: 'startup' });
-  return app;
+  return http.createServer(app.callback());
 }

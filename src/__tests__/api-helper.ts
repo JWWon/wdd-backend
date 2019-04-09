@@ -1,22 +1,16 @@
-import Koa from 'koa';
+import http from 'http';
 import { createServer } from '../lib/server';
 
 class Server {
-  static instance: Koa;
+  static instance: http.Server;
 
   constructor() {
-    if (!Server.instance) this.setInstance();
+    if (!Server.instance) {
+      Server.instance = createServer();
+    }
   }
 
-  getInstance() {
-    return Server.instance;
-  }
-
-  setInstance() {
-    createServer().then((app: Koa) => {
-      Server.instance = app;
-    });
-  }
+  getInstance = () => Server.instance;
 }
 
 const server = new Server();

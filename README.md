@@ -4,221 +4,156 @@ backend project for `우리동네댕댕이` outsource project
 
 > developer - [JWWon](https://github.com/JWWon)
 
-## DEPLOY
+## Spec
+
+Koa.js + Typescript + MongoDB + Docker
+
+## How To Use
+
+### install on local
+
+#### pre
+
+1. Install Docker, MongoDB image
+2. `..$ docker run -d mongo --port 27017:27017`
+
+#### script (on local)
+
+1. `..$ git clone https://github.com/JWWon/wdd-backend.git`
+2. `..$ cd wdd-backend`
+3. `../wdd-backend$ npm install`
+4. `../wdd-backend$ npm run dev`
+
+### deploy
+
+#### pre
 
 1. Install Docker, Git, Aws-sdk on server
+2. `..$ aws configure` (profile: 'default')
 
-2. `git clone https://github.com/JWWon/woodongdang-backend.git`
+#### script (on server)
 
-3. `npm install`
+> _TODO_ Extract mongo from docker-compose & deploy as another instance
 
-4. `aws configure`, aws account profile is 'default'
+1. `..$ git clone https://github.com/JWWon/wdd-backend.git`
+2. `..$ cd wdd-backend`
+3. `../wdd-backend$ chmod +x ./docker-config.sh`
+4. `../wdd-backend$ ./docker-config.sh`
+5. `docker-compose build`
+6. `docker-compose up -d`
 
-5. `chmod +x ./docker-config.sh`
 
-6. `./docker-config.sh`
+### Update (on server)
 
-7. `docker-compose build`
+#### pre
 
-8. `docker-compose up -d`
+1. `../wdd-backend$ chmod +x ./docker-update.sh`
+
+### script (on server)
+
+1. `../wdd-backend$ ./docker-update.sh`
 
 ## API
 
-#### Base
-
-type : JSON (don't stringify)
-
-header
+### authorization
 
 ```javascript
 {
-  authorization: token;
-}
-```
-
-#### Route
-
-- User
-
-  - `[POST] /signin`
-    - params : `{ email: String, password: String }`
-    - response : `{ ...UserInstance (password deleted), token: String }`
-  - `[POST] /signup`
-    - params: `{ email: String, password: String, name: String, birth: YYYY.MM.DD, gender: 'M' | 'F' }`
-    - response : `{ ...UserInstance (password deleted), token: String }`
-  - `[GET] /user`
-    - header required
-    - response: `{ ...UserInstance (password deleted), token: String }`
-  - `[PATCH] /user`
-    - header required
-    - params: `{ email: String, password: String, name: String, birth: YYYY.MM.DD, gender: 'M' | 'F' }`
-    - response: `{ ...UserInstance (password deleted), token: String }`
-  - `[DELETE] /user`
-    - header required
-
-- Dog
-  - `[GET] /dogs`
-    - header required
-    - response: `[DogInstance]`
-  - `[POST] /dogs`
-    - header required
-    - params: `{ name: String, thumbnail: String, breed: String, gender: 'M' | 'F', neutered: Boolean, birth: YYYY.MM.DD, weight: Number, info: String }`
-    - response: `DogInstance`
-  - `[GET] /dogs/:id`
-    - header required
-    - response: `DogInstance`
-  - `[PATCH] /dogs/:id`
-    - header required
-    - params: `{ name: String, thumbnail: String, breed: String, gender: 'M' | 'F', neutered: Boolean, birth: YYYY.MM.DD, weight: Number, info: String }`
-    - response: `DogInstance`
-  - `[DELETE] /dogs/:id`
-    - header required
-
-## Database
-
-type : `AWS DynamoDB`
-
-control : `dynamoose`
-
-#### Structure
-
-- User
-
-```javascript
-{
-    email: { type: String, hashKey: true, validate: isEmailVaild },
-    password: String, // hashed
-    lastLogin: String, // ISO format
-    dogs: { type: Object, default: {} }, // { [id: String]: { name: String, thumbnail: String } }
-    places: {
-      reviews: [String], // FK, list of Review
-      pushLikes: [String] // FK, list of Place
-    },
-    name: { type: String, required: true },
-    birth: { type: String, validate: isDateValid },
-    gender: {
-      type: String,
-      uppercase: true,
-      validate: isGenderValid
-    },
-    status: {
-      type: String,
-      validate: val => ['ACTIVE', 'PAUSED', 'TERMINATED'].includes(val),
-      default: 'ACTIVE'
-    }
-  }
-```
-
-- Dog
-
-```javascript
-{
-  id: {
-    type: String,
-    hashKey: true
-  },
-  user: {
-    // FK, User
-    type: String,
-    rangeKey: true,
-    index: true
-  },
-  feeds: [String],
-  getLikes: [String], // FK, Dog
-  name: { type: String, required: true },
-  thumbnail: String,
-  breed: { type: String, required: true },
-  gender: {
-    type: String,
-    uppercase: true,
-    required: true,
-    validate: isGenderValid
-  },
-  neutered: { type: Boolean, default: false },
-  birth: { type: String, validate: isDateValid },
-  weight: { type: Number, validate: val => val > 0 },
-  info: String // 특이사항
-}
-```
-
-- Walk
-
-> Created when start walking, Deleted after finish walking
-
-```javascript
-{
-	id: string, // PK
-	createdAt: Date,
-	updatedAt: Date,
-	dog: string, // FK
-	/* update every 10 secs */
-	pin: {
-        lat: number, // float
-        lng: number, // float
+    ...,
+    headers: {
+    	authorization: /* USER_TOKEN */
 	}
 }
 ```
 
-- Feed
+### [User](./api-guides/user.md)
 
-> Created via get data from `Walk` table
+### [Dog](./api-guides/dog.md)
+
+### [Feed](./api-guides/feed.md)
+
+### [Place](./api-guides/place.md)
+
+### [Review](./api-guides/review.md)
+
+## Model
+
+ORM : `typegoose`
+
+#### User
 
 ```javascript
 {
-	id: string, // PK
-	createdAt: Date,
-	dog: string, // FK
-	/* strict */
-	time: string, // 00:00:00(hh:mm:ss)
-	distance: number, // km
-	peeCount: number,
-	pooCount: number,
-	pins: [{
-		/* interval 10 secs */
-		lat: number, // float
-		lng: number, // float
-		type: null | 'pee' | 'poo'
-	}],
-	/* option */
-	image?: string, // background image
+    email!: string; // unique
+    password!: string; // hashed
+    status!: 'ACTIVE' | 'PAUSED' | 'TERMINATED';
+    name!: string;
+    birth?: string;
+    gender?: 'M' | 'F';
+    lastLogin!: Date;
+	createdAt!: Date;
+	dogs!: { [id: string]: DogSummery };
+	places?: Schema.Types.ObjectId[];
+	reviews?: Schema.Types.ObjectId[];
 }
 ```
 
-- Place
+#### Dog
 
 ```javascript
 {
-	id: string, // PK
-	ratingAvg: number, // float
-	reviews: string[], // FK
-	getLikes: string[], // FK, list of User
-	pin: {
-		lat: number,
-		lng: number,
-	},
-	/* strict */
-	name: string,
-	tag: string,
-	address: string,
-	images: string[],
-	officeHour: string, // free form
-	phone: string, // 010-0000-0000
+    user!: Schema.Types.ObjectId;
+    name!: string;
+    thumbnail?: string;
+	breed!: string;
+	gender!: 'M' | 'F' | 'N';
+	birth?: string;
+    weight?: number;
+    info?: string;
+	feeds?: Schema.Types.ObjectId[];
+	likes?: Schema.Types.ObjectId[];
 }
 ```
 
-- Review
+#### Feed
 
 ```javascript
 {
-    id: string, // PK
-	createdAt: Date,
-	updatedAt: Date,
-	place: string, // FK
-	user: string, // FK
-	/* strict */
-	rating: number,
-	images: string[],
-	comment: string,
-	reports: ('useBadWord' | 'advertising' | 'duplicated')[],
+	dog!: Schema.Types.ObjectId;
+    user!: Schema.Types.ObjectId;
+    seconds!: number;
+    distance!: number; // km
+    steps!: number;
+    pins!: string; // JSON.stringify()
+    location!: Location;
+}
+```
+
+#### Place
+
+```javascript
+{
+    name!: string;
+    location!: ClassInstance<Location>;
+    address!: string; // Road Address
+    rating!: number;
+    officeHour?: OfficeHour;
+	contact?: string;
+	images!: string[];
+	tags?: string[];
+	likes?: Schema.Types.ObjectId[];
+	reviews?: Schema.Types.ObjectId[];
+}
+```
+
+#### Review
+
+```javascript
+{
+	place!: Schema.Types.ObjectId;
+	user!: Schema.Types.ObjectId;
+	rating!: number;
+	description?: string;
+	reports?: Report[];
 }
 ```
