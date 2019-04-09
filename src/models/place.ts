@@ -1,7 +1,14 @@
-import { arrayProp, index, prop, Typegoose } from 'typegoose';
 import { PureInstance } from '../interfaces/model';
 import { Location } from './schemas/location';
 import { Scrap } from './schemas/scrap';
+import {
+  arrayProp,
+  index,
+  instanceMethod,
+  InstanceType,
+  prop,
+  Typegoose,
+} from 'typegoose';
 
 interface OfficeHour {
   default: string;
@@ -21,20 +28,28 @@ export class Place extends Typegoose {
   label!: '카페' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
-  @prop({ match: /^(0\d{1,2}-)?\d{3,4}-\d{4}$/ })
+  @prop()
   contact!: string;
   @prop()
   thumbnail!: string;
-  @prop()
+  @prop({ index: true })
   query!: string; // disassemble korean for search
   @prop()
   officeHour?: OfficeHour;
   @prop()
   icon?: string;
-  @arrayProp({ items: String })
-  images?: string[];
+  @prop()
+  description?: string;
   @arrayProp({ items: Object, default: [] })
   scraps!: PureInstance<Scrap>[];
+  @arrayProp({ items: String })
+  images?: string[];
+
+  @instanceMethod
+  serialize(this: InstanceType<Place>) {
+    delete this.query;
+    return this;
+  }
 }
 
 const placeModel = new Place().getModelForClass(Place);

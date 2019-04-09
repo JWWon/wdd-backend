@@ -160,7 +160,7 @@ describe('GET /feeds', () => {
   it('should search users by location', async () => {
     const res = await request(server.getInstance())
       .get('/users')
-      .query({ coordinates: JSON.stringify(center) });
+      .query({ coordinates: JSON.stringify(center), range: 1 });
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
     res.body.forEach((user: any) => {

@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { excludeParams, hasParams } from '../lib/check-params';
-import { calcDistance, queryLocation } from '../lib/helper';
+import { calcDistance, pickLocation } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import { hashPassword, User as Class } from '../models/user';
 
@@ -20,6 +20,7 @@ interface UserWithDist extends Instance {
 
 interface Search {
   coordinates: string; // [longitude, latitude]
+  range?: string;
 }
 
 const api = ({ User }: Model) => ({
@@ -83,7 +84,7 @@ const api = ({ User }: Model) => ({
     const { query } = ctx.request;
     hasParams(['coordinates'], query);
     const users: Instance[] = await User.find({
-      location: queryLocation(JSON.parse(query.coordinates)),
+      location: pickLocation(query),
       repDog: { $exists: true },
     })
       .sort('-lastLogin')

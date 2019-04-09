@@ -1,17 +1,21 @@
-interface LatLng {
-  latitude: number;
-  longitude: number;
+interface Query {
+  coordinates?: string;
+  range?: string;
+  [x: string]: any;
 }
 
-export const queryLocation = (
-  coordinates: [number, number],
-  range?: string
-) => ({
-  $near: {
-    $maxDistance: range ? parseFloat(range) * 1000 : 1000, // 1km
-    $geometry: { coordinates, type: 'Point' },
-  },
-});
+export const pickLocation = (q: Query) => {
+  const query: any = {
+    $near: {
+      $geometry: {
+        coordinates: JSON.parse((q.coordinates as any) as string),
+        type: 'Point',
+      },
+    },
+  };
+  if (q.range) query.$near.$maxDistance = parseFloat(q.range) * 1000;
+  return query;
+};
 
 export function calcDistance(posX: number[], posY: number[]) {
   const p = 0.017453292519943295; // Math.PI / 180

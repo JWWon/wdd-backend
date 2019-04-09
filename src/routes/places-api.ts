@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
 import { hasParams } from '../lib/check-params';
-import { calcDistance, queryLocation } from '../lib/helper';
+import { calcDistance, pickLocation } from '../lib/helper';
 import { loadUser } from '../middleware/load-user';
 import Table, { Place as Class } from '../models/place';
 
@@ -33,7 +33,9 @@ function disassembleKorean(text: string) {
 }
 
 function createQuery(place: Instance) {
-  return disassembleKorean([place.name, place.address].join(''));
+  return disassembleKorean(
+    [place.name, place.label, place.address, place.description].join('')
+  );
 }
 
 // middleware
@@ -50,7 +52,8 @@ const api = ({ Place }: Model) => ({
     const { body } = ctx.request;
     hasParams(['name', 'location', 'address', 'contact', 'thumbnail'], body);
     body.query = createQuery(body);
-    return ctx.created(await Place.create(body));
+    const place = await Place.create(body);
+    return ctx.created(place.serialize());
   },
   search: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
@@ -59,16 +62,13 @@ const api = ({ Place }: Model) => ({
     if (q.keyword) {
       query.query = { $regex: disassembleKorean(q.keyword), $options: 'g' };
     }
-    if (q.coordinates) {
-      query.location = queryLocation(JSON.parse(q.coordinates), q.range);
-    }
+    if (q.coordinates) query.location = pickLocation(q);
     if (q.places) {
       const places: string[] = JSON.parse(q.places);
       query._id = {
         $in: places.map(place => mongoose.Types.ObjectId(place)),
       };
     }
-
     const places: Instance[] = await Place.find(query)
       .sort('-rating')
       .lean();
@@ -83,13 +83,14 @@ const api = ({ Place }: Model) => ({
     return ctx.ok(places);
   },
   get: async (ctx: Context) => {
-    return ctx.ok(ctx.state.place);
+    return ctx.ok(ctx.state.place.serialize());
   },
   update: async (ctx: Context<Instance, null, Params>) => {
     const { body } = ctx.request;
     const updatePlace = Object.assign(ctx.state.place, body);
     updatePlace.query = createQuery(updatePlace);
-    return ctx.ok(await updatePlace.save({ validateBeforeSave: true }));
+    const place = await updatePlace.save({ validateBeforeSave: true });
+    return ctx.ok(place.serialize());
   },
   delete: async (ctx: Context) => {
     await ctx.state.place.remove();
