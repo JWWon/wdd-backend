@@ -97,7 +97,7 @@ const api = ({ Dog }: Model) => ({
     dog.likes.push({ dog: _id, createdAt: new Date() });
     dog.markModified('likes');
     await dog.save({ validateBeforeSave: true });
-    return ctx.ok({ message: '킁킁을 눌렀습니다.' });
+    return ctx.ok({ message: '킁킁을 보냈습니다.' });
   },
 });
 
