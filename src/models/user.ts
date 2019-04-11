@@ -59,7 +59,7 @@ export class User extends Typegoose {
   @prop({ default: Date.now })
   createdAt!: Date;
   @prop()
-  repDog!: InstanceType<Dog>;
+  repDog?: InstanceType<Dog>;
   @prop({ default: {} })
   dogs!: { [id: string]: string }; // { _id: name }
   @prop({ default: { type: 'Point', coordinates: [0, 0] } })
@@ -124,7 +124,7 @@ export class User extends Typegoose {
       this.dogs[dog._id] = dog.name;
       this.markModified('dogs');
     }
-    if (dog._id.equals(this.repDog._id)) {
+    if (this.repDog && dog._id.equals(this.repDog._id)) {
       this.repDog = dog;
       this.markModified('repDog');
     }

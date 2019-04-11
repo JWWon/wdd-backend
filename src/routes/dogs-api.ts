@@ -64,7 +64,7 @@ const api = ({ Dog }: Model) => ({
   },
   delete: async (ctx: Context) => {
     delete ctx.user.dogs[ctx.state.dog._id];
-    if (ctx.user.repDog._id === ctx.state.dog._id) {
+    if (ctx.user.repDog && ctx.user.repDog._id === ctx.state.dog._id) {
       delete ctx.user.repDog;
       const dogKeys = Object.keys(ctx.user.dogs);
       if (dogKeys.length > 0) {
@@ -79,6 +79,9 @@ const api = ({ Dog }: Model) => ({
   },
   pushLike: async (ctx: Context) => {
     const { dog } = ctx.state;
+    if (!ctx.user.repDog) {
+      return ctx.badRequest('등록되어있는 댕댕이가 없습니다.');
+    }
     const { _id } = ctx.user.repDog;
     // check if user send like on same day
     const likes = dog.likes

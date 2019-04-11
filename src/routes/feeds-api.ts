@@ -32,6 +32,9 @@ const api = ({ Feed, Dog }: Model) => ({
       body
     );
     excludeParams(body, ['createdAt']);
+    if (!ctx.user.repDog) {
+      return ctx.badRequest('등록되어있는 댕댕이가 없습니다.');
+    }
     const feed = await Feed.create({
       ...body,
       user: ctx.user._id,

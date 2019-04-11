@@ -28,14 +28,14 @@ export class Place extends Typegoose {
   label!: '카페' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
-  @prop()
+  @prop({ required: true, match: /^0[0-9]{1,2}-[0-9]{3,4}-[0-9]]{4}$/ })
   contact!: string;
-  @prop()
+  @prop({ required: true })
   thumbnail!: string;
+  @prop({ required: true })
+  officeHour!: OfficeHour;
   @prop({ index: true })
   query!: string; // disassemble korean for search
-  @prop()
-  officeHour?: OfficeHour;
   @prop()
   icon?: string;
   @prop()

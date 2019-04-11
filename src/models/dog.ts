@@ -8,12 +8,12 @@ export class Dog extends Typegoose {
   user!: Schema.Types.ObjectId;
   @prop({ required: true })
   name!: string;
-  @prop()
-  thumbnail?: string;
   @prop({ required: true })
   breed!: string;
   @prop({ required: true, uppercase: true, enum: ['M', 'F', 'N'] })
   gender!: 'M' | 'F' | 'N';
+  @prop()
+  thumbnail?: string;
   @prop({ match: /^\d{4}.\d{2}.\d{2}$/ })
   birth?: string;
   @prop({ min: 0 })
