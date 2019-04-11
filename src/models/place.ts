@@ -25,17 +25,17 @@ export class Place extends Typegoose {
   @prop({ required: true })
   address!: string; // Road Address
   @prop({ default: '기타' })
-  label!: '카페' | '용품' | '병원' | '기타';
+  label!: '카페' | '식당' | '술집' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
-  @prop({ required: true, match: /^0[0-9]{1,2}-[0-9]{3,4}-[0-9]]{4}$/ })
-  contact!: string;
   @prop({ required: true })
   thumbnail!: string;
-  @prop({ required: true })
-  officeHour!: OfficeHour;
   @prop({ index: true })
   query!: string; // disassemble korean for search
+  @prop({ match: /(^0[0-9]{1,2}-)?[0-9]{3,4}-[0-9]{4}$/ })
+  contact?: string;
+  @prop()
+  officeHour?: OfficeHour;
   @prop()
   icon?: string;
   @prop()
