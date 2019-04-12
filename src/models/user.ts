@@ -19,23 +19,6 @@ import {
   Typegoose,
 } from 'typegoose';
 
-export interface Serialized
-  extends Pick<
-    User,
-    | 'email'
-    | 'status'
-    | 'name'
-    | 'birth'
-    | 'gender'
-    | 'lastLogin'
-    | 'repDog'
-    | 'dogs'
-    | 'location'
-    | 'places'
-  > {
-  token: string;
-}
-
 export async function hashPassword(password: string) {
   return await hash(password, 10);
 }
@@ -60,6 +43,8 @@ export class User extends Typegoose {
   createdAt!: Date;
   @prop()
   repDog?: InstanceType<Dog>;
+  @prop()
+  manager?: boolean;
   @prop({ default: {} })
   dogs!: { [id: string]: string }; // { _id: name }
   @prop({ default: { type: 'Point', coordinates: [0, 0] } })
@@ -79,7 +64,7 @@ export class User extends Typegoose {
   @instanceMethod
   serialize(this: InstanceType<User>) {
     // generate token
-    const serialized: Serialized = {
+    const serialized = {
       ...pick(this, [
         '_id',
         'email',
