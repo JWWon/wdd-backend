@@ -103,9 +103,12 @@ const api = ({ Place }: Model) => ({
       '해당 가게를 이미 스크랩했습니다.'
     );
     place.scraps.push({ user: ctx.user._id, createdAt: new Date() });
+    place.markModified('scraps');
+    // update user
     ctx.user.places.push(place._id);
+    ctx.user.markModified('places');
     await ctx.user.save({ validateBeforeSave: true });
-    return ctx.ok(await place.save({ validateBeforeSave: true }));
+    return ctx.ok(await place.save());
   },
   unScrap: async (ctx: Context) => {
     const { place } = ctx.state;
@@ -118,9 +121,12 @@ const api = ({ Place }: Model) => ({
       scrap => scrap.user === ctx.user._id
     );
     place.scraps.splice(scrapIndex, 1);
+    place.markModified('scraps');
+    // update user
     ctx.user.places.splice(placeIndex, 1);
+    ctx.user.markModified('places');
     await ctx.user.save({ validateBeforeSave: true });
-    return ctx.ok(await place.save({ validateBeforeSave: true }));
+    return ctx.ok(await place.save());
   },
 });
 
