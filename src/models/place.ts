@@ -28,10 +28,10 @@ export class Place extends Typegoose {
   label!: '카페' | '식당' | '술집' | '용품' | '병원' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
-  @prop({ required: true })
-  thumbnail!: string;
   @prop({ index: true })
   query!: string; // disassemble korean for search
+  @prop()
+  thumbnail?: string;
   @prop({ match: /(^0[0-9]{1,2}-)?[0-9]{3,4}-[0-9]{4}$/ })
   contact?: string;
   @prop()

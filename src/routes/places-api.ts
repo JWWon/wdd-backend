@@ -50,7 +50,7 @@ async function loadPlace(ctx: Context<null, null, Params>, next: any) {
 const api = ({ Place }: Model) => ({
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
-    hasParams(['name', 'location', 'address', 'contact', 'thumbnail'], body);
+    hasParams(['name', 'location', 'address', 'contact'], body);
     body.query = createQuery(body);
     const place = await Place.create(body);
     return ctx.created(place.serialize());
