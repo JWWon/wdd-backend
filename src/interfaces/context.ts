@@ -4,6 +4,7 @@ import { InstanceType } from 'typegoose';
 import { Dog } from '../models/dog';
 import { Feed } from '../models/feed';
 import { Place } from '../models/place';
+import { Review } from '../models/review';
 import { User } from '../models/user';
 
 interface Request<B, Q> extends Koa.Request {
@@ -19,5 +20,6 @@ export interface Context<Body = null, Query = null, Params = null> extends Ctx {
     dog: InstanceType<Dog>;
     place: InstanceType<Place>;
     feed: InstanceType<Feed>;
+    review: InstanceType<Review>;
   };
 }
