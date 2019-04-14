@@ -24,6 +24,13 @@ export class Dog extends Typegoose {
   feeds!: Schema.Types.ObjectId[];
   @arrayProp({ items: Object, default: [] })
   likes!: PureInstance<DogLike>[];
+  @arrayProp({ items: Object, default: [] })
+  histories!: {
+    yearMonth: string;
+    count: number;
+    seconds: number;
+    steps: number;
+  }[];
 }
 
 const dogModel = new Dog().getModelForClass(Dog);

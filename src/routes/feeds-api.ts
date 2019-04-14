@@ -1,6 +1,7 @@
 import { createController } from 'awilix-koa';
 import { Conflict, NotFound } from 'fejl';
 import { find, findIndex } from 'lodash';
+import moment from 'moment';
 import mongoose from 'mongoose';
 import { Context } from '../interfaces/context';
 import { Model, PureInstance } from '../interfaces/model';
@@ -16,7 +17,7 @@ interface Search {
 }
 
 // middleware
-async function loadPlace(ctx: Context<null, null, { id: string }>, next: any) {
+async function loadFeed(ctx: Context<null, null, { id: string }>, next: any) {
   const feed = await Table.findById(ctx.params.id);
   NotFound.assert(feed, '피드를 찾을 수 없습니다.');
   if (!feed) return;
@@ -44,6 +45,22 @@ const api = ({ Feed, Dog }: Model) => ({
     const dog = await Dog.findById(ctx.user.repDog._id);
     if (!dog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
     dog.feeds.push(feed._id);
+    dog.markModified('feeds');
+    // update dog's history
+    const yearMonth = moment(feed.createdAt).format('YYYY.MM');
+    if (
+      dog.histories.length === 0 ||
+      dog.histories[0].yearMonth !== yearMonth
+    ) {
+      dog.histories = [
+        { yearMonth, count: 0, seconds: 0, steps: 0 },
+        ...dog.histories,
+      ];
+    }
+    dog.histories[0].count += 1;
+    dog.histories[0].seconds += body.seconds;
+    dog.histories[0].steps += body.steps;
+    dog.markModified('histories');
     await dog.save();
     // update User
     ctx.user.repDog = dog;
@@ -67,6 +84,18 @@ const api = ({ Feed, Dog }: Model) => ({
       .sort('-createdAt')
       .lean();
     return ctx.ok(feeds);
+  },
+  delete: async (ctx: Context) => {
+    if (ctx.user.repDog) {
+      const index = findIndex(ctx.user.repDog.feeds, feed =>
+        ctx.state.feed._id.equals(feed)
+      );
+      ctx.user.repDog.feeds.splice(index, 1);
+      ctx.user.markModified('repDog');
+      await ctx.user.save();
+    }
+    await ctx.state.feed.remove();
+    return ctx.noContent({ message: 'Feed removed' });
   },
   like: async (ctx: Context) => {
     const { feed } = ctx.state;
@@ -92,5 +121,6 @@ export default createController(api)
   .prefix('/feeds')
   .post('', 'create', { before: [loadUser] })
   .get('', 'get')
-  .patch('/:id/like', 'like', { before: [loadUser, loadPlace] })
-  .delete('/:id/like', 'unLike', { before: [loadUser, loadPlace] });
+  .delete('/:id', 'delete', { before: [loadUser, loadFeed] })
+  .patch('/:id/like', 'like', { before: [loadUser, loadFeed] })
+  .delete('/:id/like', 'unLike', { before: [loadUser, loadFeed] });
