@@ -28,8 +28,13 @@ Koa.js + Typescript + MongoDB + Docker
 
 #### pre
 
-1. Install Docker, Git, Aws-sdk on server
-2. `..$ aws configure` (profile: 'default')
+1. Install Docker, Git
+2. Run shell command
+
+```bash
+..$ export AWS_ACCESS_KEY=${YOUR_AWS_ACCESS_KEY}
+..$ export AWS_SECRET_ACCESS_KEY=${YOUR_AWS_SECRET_ACCESS_KEY}
+```
 
 #### script (on server)
 
@@ -41,7 +46,6 @@ Koa.js + Typescript + MongoDB + Docker
 4. `../wdd-backend$ ./docker-config.sh`
 5. `docker-compose build`
 6. `docker-compose up -d`
-
 
 ### Update (on server)
 
