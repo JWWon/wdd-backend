@@ -12,6 +12,10 @@ export class Dog extends Typegoose {
   breed!: string;
   @prop({ required: true, uppercase: true, enum: ['M', 'F', 'N'] })
   gender!: 'M' | 'F' | 'N';
+  @prop({ default: { firstLike: false } })
+  badges!: {
+    firstLike: boolean;
+  };
   @prop()
   thumbnail?: string;
   @prop({ match: /^\d{4}.\d{2}.\d{2}$/ })
@@ -29,7 +33,10 @@ export class Dog extends Typegoose {
     yearMonth: string;
     count: number;
     seconds: number;
+    distance: number;
     steps: number;
+    pees: number;
+    poos: number;
   }[];
 }
 

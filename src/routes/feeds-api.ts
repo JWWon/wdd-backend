@@ -47,19 +47,30 @@ const api = ({ Feed, Dog }: Model) => ({
     dog.feeds.push(feed._id);
     dog.markModified('feeds');
     // update dog's history
-    const yearMonth = moment(feed.createdAt).format('YYYY.MM');
+    const yearMonth = moment(feed.createdAt).format('YYYY년 MM월');
     if (
       dog.histories.length === 0 ||
       dog.histories[0].yearMonth !== yearMonth
     ) {
       dog.histories = [
-        { yearMonth, count: 0, seconds: 0, steps: 0 },
+        {
+          yearMonth,
+          count: 0,
+          seconds: 0,
+          steps: 0,
+          distance: 0,
+          pees: 0,
+          poos: 0,
+        },
         ...dog.histories,
       ];
     }
     dog.histories[0].count += 1;
     dog.histories[0].seconds += body.seconds;
+    dog.histories[0].distance += body.distance;
     dog.histories[0].steps += body.steps;
+    dog.histories[0].pees += body.pees;
+    dog.histories[0].poos += body.poos;
     dog.markModified('histories');
     await dog.save();
     // update User
