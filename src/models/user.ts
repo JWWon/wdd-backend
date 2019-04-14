@@ -19,23 +19,6 @@ import {
   Typegoose,
 } from 'typegoose';
 
-export interface Serialized
-  extends Pick<
-    User,
-    | 'email'
-    | 'status'
-    | 'name'
-    | 'birth'
-    | 'gender'
-    | 'lastLogin'
-    | 'repDog'
-    | 'dogs'
-    | 'location'
-    | 'places'
-  > {
-  token: string;
-}
-
 export async function hashPassword(password: string) {
   return await hash(password, 10);
 }
@@ -59,7 +42,9 @@ export class User extends Typegoose {
   @prop({ default: Date.now })
   createdAt!: Date;
   @prop()
-  repDog!: InstanceType<Dog>;
+  repDog?: InstanceType<Dog>;
+  @prop()
+  manager?: boolean;
   @prop({ default: {} })
   dogs!: { [id: string]: string }; // { _id: name }
   @prop({ default: { type: 'Point', coordinates: [0, 0] } })
@@ -79,7 +64,7 @@ export class User extends Typegoose {
   @instanceMethod
   serialize(this: InstanceType<User>) {
     // generate token
-    const serialized: Serialized = {
+    const serialized = {
       ...pick(this, [
         '_id',
         'email',
@@ -124,7 +109,7 @@ export class User extends Typegoose {
       this.dogs[dog._id] = dog.name;
       this.markModified('dogs');
     }
-    if (dog._id.equals(this.repDog._id)) {
+    if (this.repDog && dog._id.equals(this.repDog._id)) {
       this.repDog = dog;
       this.markModified('repDog');
     }

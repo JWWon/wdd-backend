@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 import { arrayProp, prop, Typegoose } from 'typegoose';
-import { PureInstance } from '../interfaces/model';
-import { Report } from './schemas/report';
+// import { PureInstance } from '../interfaces/model';
+// import { Report } from './schemas/report';
 
 export class Review extends Typegoose {
   @prop({ required: true, index: true, ref: 'User' })
@@ -12,8 +12,8 @@ export class Review extends Typegoose {
   rating!: number;
   @prop()
   description?: string;
-  @arrayProp({ items: Object })
-  reports?: PureInstance<Report>[];
+  @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'User', default: [] })
+  reports!: Schema.Types.ObjectId[];
 }
 
 const reviewModel = new Review().getModelForClass(Review, {

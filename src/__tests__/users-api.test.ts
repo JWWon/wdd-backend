@@ -1,14 +1,8 @@
 import { pick, sample } from 'lodash';
 import request from 'supertest';
-import { PureInstance } from '../interfaces/model';
-import { Serialized, User as Class } from '../models/user';
 import { server } from './api-helper';
 
-type UserInstance =
-  | Pick<PureInstance<Class>, 'email' | 'name'>
-  | PureInstance<Serialized>;
-
-let sampleUser: UserInstance = {
+let sampleUser: any = {
   email: 'user@sample.com',
   name: '테스트',
 };
@@ -29,7 +23,7 @@ describe('POST /signup', () => {
       .post('/signup')
       .send({ ...sampleUser, password });
 
-    expect(res.body as PureInstance<Serialized>).toEqual(
+    expect(res.body).toEqual(
       expect.objectContaining(pick(sampleUser, ['email', 'name']))
     );
     expect(res.status).toBe(201);
@@ -56,7 +50,7 @@ describe('POST /signin', () => {
     const res = await request(server.getInstance())
       .post('/signin')
       .send({ password, email: sampleUser.email });
-    expect(res.body as PureInstance<Serialized>).toEqual(
+    expect(res.body).toEqual(
       expect.objectContaining(pick(sampleUser, ['email', 'name']))
     );
     expect(res.status).toBe(200);
@@ -70,11 +64,9 @@ describe('PATCH /user', () => {
     const data = { name: '개명했어요', gender: 'F' };
     const res = await request(server.getInstance())
       .patch('/user')
-      .set('authorization', (sampleUser as PureInstance<Serialized>).token)
+      .set('authorization', sampleUser.token)
       .send(data);
-    expect(res.body as PureInstance<Serialized>).toEqual(
-      expect.objectContaining(data)
-    );
+    expect(res.body).toEqual(expect.objectContaining(data));
     expect(res.status).toBe(200);
   });
 
@@ -82,7 +74,7 @@ describe('PATCH /user', () => {
     const password = 'mynewpassword';
     const res = await request(server.getInstance())
       .patch('/user')
-      .set('authorization', (sampleUser as PureInstance<Serialized>).token)
+      .set('authorization', sampleUser.token)
       .send({ password });
     expect(res.status).toBe(200);
   });
@@ -91,7 +83,7 @@ describe('PATCH /user', () => {
     const location = { type: 'Point', coordinates: randCoord(center) };
     const res = await request(server.getInstance())
       .patch('/user')
-      .set('authorization', (sampleUser as PureInstance<Serialized>).token)
+      .set('authorization', sampleUser.token)
       .send({ location });
     expect(res.body.location).toEqual(location);
     expect(res.status).toBe(200);

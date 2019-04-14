@@ -1,6 +1,8 @@
 import { Schema } from 'mongoose';
 import { arrayProp, InstanceType, prop, Typegoose } from 'typegoose';
+import { PureInstance } from '../interfaces/model';
 import { Dog } from './dog';
+import { UserLike } from './schemas/user-like';
 
 export class Feed extends Typegoose {
   @prop({ required: true, ref: 'User' })
@@ -15,16 +17,18 @@ export class Feed extends Typegoose {
   distance!: number; // km
   @prop({ required: true, min: 0 })
   steps!: number;
-  @prop()
+  @prop({ required: true })
   pees!: number;
-  @prop()
+  @prop({ required: true })
   poos!: number;
   @prop({ default: Date.now })
   createdAt!: Date;
   @prop()
   memo?: string;
-  @arrayProp({ items: String })
+  @arrayProp({ items: String, default: [] })
   images!: string[];
+  @arrayProp({ items: Object, default: [] })
+  likes!: PureInstance<UserLike>[];
 }
 
 const feedModel = new Feed().getModelForClass(Feed);

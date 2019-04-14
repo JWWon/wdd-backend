@@ -22,13 +22,13 @@ async function loadDog(ctx: Context<null, null, { id: string }>, next: any) {
   await next();
 }
 
-const api = ({ Dog }: Model) => ({
+const api = ({ Dog, User }: Model) => ({
   search: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
     const query: { [key: string]: any } = {};
     if (q.dogs) {
       const dogs: string[] = JSON.parse(q.dogs);
-      query['dog._id'] = {
+      query._id = {
         $in: dogs.map(dog => mongoose.Types.ObjectId(dog)),
       };
     }
@@ -64,7 +64,7 @@ const api = ({ Dog }: Model) => ({
   },
   delete: async (ctx: Context) => {
     delete ctx.user.dogs[ctx.state.dog._id];
-    if (ctx.user.repDog._id === ctx.state.dog._id) {
+    if (ctx.user.repDog && ctx.user.repDog._id === ctx.state.dog._id) {
       delete ctx.user.repDog;
       const dogKeys = Object.keys(ctx.user.dogs);
       if (dogKeys.length > 0) {
@@ -79,24 +79,47 @@ const api = ({ Dog }: Model) => ({
   },
   pushLike: async (ctx: Context) => {
     const { dog } = ctx.state;
-    const { _id } = ctx.user.repDog;
+    if (!ctx.user.repDog) {
+      return ctx.badRequest('등록되어있는 댕댕이가 없습니다.');
+    }
+    const repDogId = ctx.user.repDog._id;
     // check if user send like on same day
     const likes = dog.likes
-      .filter(like => _id.equals(like.dog))
+      .filter(like => repDogId.equals(like.dog))
       .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime());
     if (likes.length > 0) {
+      const latest = likes[0].createdAt;
+      latest.setHours(0, 0, 0, 0);
       const now = new Date();
-      likes[0].createdAt.setHours(0, 0, 0, 0);
       now.setHours(0, 0, 0, 0);
+
       Forbidden.assert(
-        likes[0].createdAt.getTime() !== now.getTime(),
+        latest.getTime() !== now.getTime(),
         '킁킁은 하루에 한 번만 보낼 수 있습니다.'
       );
     }
     // send like
-    dog.likes.push({ dog: _id, createdAt: new Date() });
+    const like = { dog: repDogId, createdAt: new Date() };
+    dog.likes.push(like);
     dog.markModified('likes');
     await dog.save({ validateBeforeSave: true });
+    // update owner's info
+    const owner = await User.findById(dog.user);
+    if (!owner) return ctx.notFound('주인을 찾을 수 없습니다.');
+    if (owner.repDog && owner.repDog._id.equals(dog._id)) {
+      owner.repDog.likes.push(like);
+      owner.markModified('repDog');
+      await owner.save({ validateBeforeSave: true });
+    }
+    // check update repDog badge
+    if (!ctx.user.repDog.badges.firstLike) {
+      const repDog = await Dog.findById(ctx.user.repDog._id);
+      if (!repDog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
+      repDog.badges.firstLike = true;
+      await repDog.save();
+      ctx.user.repDog.badges.firstLike = true;
+      await ctx.user.save();
+    }
     return ctx.ok({ message: '킁킁을 보냈습니다.' });
   },
 });
