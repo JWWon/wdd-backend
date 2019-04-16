@@ -44,7 +44,7 @@ describe('POST /dogs', () => {
       .get('/user')
       .set('authorization', sampleUser.token);
     const { dogs, repDog } = resUser.body;
-    expect(dogs[Object.keys(dogs)[0]]).toBe(sampleDog.name);
+    expect(dogs[Object.keys(dogs)[0]].name).toBe(sampleDog.name);
     expect(repDog).toEqual(sampleDog);
     expect(resUser.status).toBe(200);
     sampleUser = resUser.body;
@@ -97,7 +97,7 @@ describe('PATCH /dogs/:id', () => {
       .get('/user')
       .set('authorization', sampleUser.token);
     const { dogs } = resUser.body;
-    expect(dogs[Object.keys(dogs)[0]]).toBe(sampleDog.name);
+    expect(dogs[Object.keys(dogs)[0]].name).toBe(sampleDog.name);
     expect(resUser.status).toBe(200);
     sampleUser = resUser.body;
   });
@@ -123,7 +123,7 @@ describe('PUT /dogs/:id', () => {
       .get('/user')
       .set('authorization', sampleUser.token);
     const { dogs, repDog } = resUser.body;
-    expect(dogs[Object.keys(dogs)[1]]).toBe(anotherDog.name);
+    expect(dogs[Object.keys(dogs)[1]].name).toBe(anotherDog.name);
     expect(repDog).toEqual(anotherDog);
     expect(resUser.status).toBe(200);
     sampleUser = resUser.body;
@@ -182,7 +182,6 @@ describe('PATCH /dogs/:id/like', () => {
     const res = await request(server.getInstance())
       .patch(`/dogs/${dog._id}/like`)
       .set('authorization', sampleUser.token);
-    expect(res.body).toHaveProperty('message');
     expect(res.status).toBe(200);
   });
 

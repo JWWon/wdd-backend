@@ -46,7 +46,12 @@ export class User extends Typegoose {
   @prop()
   manager?: boolean;
   @prop({ default: {} })
-  dogs!: { [id: string]: string }; // { _id: name }
+  dogs!: {
+    [id: string]: {
+      name: string;
+      thumbnail?: string;
+    };
+  };
   @prop({ default: { type: 'Point', coordinates: [0, 0] } })
   location!: PureInstance<Location>;
   @arrayProp({ items: Schema.Types.ObjectId, itemsRef: 'Place', default: [] })
@@ -97,7 +102,7 @@ export class User extends Typegoose {
   // *** Doesn't have callbacks
   @instanceMethod
   async addDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
-    this.dogs[dog._id] = dog.name;
+    this.dogs[dog._id] = pick(dog, ['name', 'thumbnail']);
     this.repDog = dog;
     this.markModified('dogs');
     this.markModified('repDog');
@@ -105,8 +110,8 @@ export class User extends Typegoose {
   }
   @instanceMethod
   async updateDog(this: InstanceType<User>, dog: InstanceType<Dog>) {
-    if (dog.name !== this.dogs[dog._id]) {
-      this.dogs[dog._id] = dog.name;
+    if (dog.name !== this.dogs[dog._id].name) {
+      this.dogs[dog._id] = pick(dog, ['name', 'thumbnail']);
       this.markModified('dogs');
     }
     if (this.repDog && dog._id.equals(this.repDog._id)) {

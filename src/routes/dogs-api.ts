@@ -116,11 +116,13 @@ const api = ({ Dog, User }: Model) => ({
       const repDog = await Dog.findById(ctx.user.repDog._id);
       if (!repDog) return ctx.notFound('댕댕이를 찾을 수 없습니다.');
       repDog.badges.firstLike = true;
+      repDog.markModified('badges');
       await repDog.save();
       ctx.user.repDog.badges.firstLike = true;
+      ctx.user.markModified('repDog');
       await ctx.user.save();
     }
-    return ctx.ok({ message: '킁킁을 보냈습니다.' });
+    return ctx.ok(ctx.user.repDog);
   },
 });
 
