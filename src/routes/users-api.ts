@@ -59,7 +59,20 @@ const api = ({ User }: Model) => ({
       from: 'no-reply@woodongdang.com',
       to: email,
       subject: '[우리동네댕댕이] 비밀번호 변경을 위해 이메일을 인증해주세요',
-      html: `<a href="woodongdang://session/forgot-password/change-password/${token}">이메일 인증하기</a>`,
+      html: `
+      <div>
+        <h3>이메일 인증을 완료하시려면 아래 버튼을 눌러주세요.</h3>
+        <a href="woodongdang://session/forgot-password/change-password/${token}">이메일 인증하기</a>
+      </div>
+      <div>
+        <p>본 메일은 발신 전용 메일입니다.</p>
+        <p>문의는 고객센터를 이용해주세요.</p>
+      </div>
+      <div>
+        <p>(주)1986프로덕션 서울시 서초구 언남길 47</p>
+        <p>고객센터 : <a href=“malito:info@woodongdang.com”>info@woodongdang.com</a></p>
+        <p>Copyright 1986production All rights reserved.</p>
+      </div>`,
     });
     return ctx.ok({ email });
   },
