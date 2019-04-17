@@ -56,7 +56,7 @@ const api = ({ User }: Model) => ({
       SES: new AWS.SES({ apiVersion: '2012-10-17', region: 'us-west-2' }),
     });
     await transporter.sendMail({
-      from: 'no-reply@woodongdang.com',
+      from: 'no-reply@auto.woodongdang.com',
       to: email,
       subject: '[우리동네댕댕이] 비밀번호 변경을 위해 이메일을 인증해주세요',
       html: `
