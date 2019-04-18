@@ -34,7 +34,7 @@ export function connectDB() {
     });
   }
 
-  mongoose.connect(`mongodb://${env.DB_URL}/woodongdang`, {
+  mongoose.connect(`${env.DB_URL}/woodongdang`, {
     autoReconnect: true,
     useNewUrlParser: true,
     useCreateIndex: true,
