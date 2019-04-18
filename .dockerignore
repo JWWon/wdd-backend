@@ -1,5 +1,13 @@
-node_modules
-dist
+# build
+dist/
+# npm
+node_modules/
 *.log
-ssh-connect.sh
+# git
+.git
+.gitignore
+# mark down
 *.md
+# shell script
+ssh-connect.sh
+Dockerfile
