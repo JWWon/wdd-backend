@@ -22,7 +22,7 @@ export class Feed extends Typegoose {
   @prop({ default: Date.now })
   createdAt!: Date;
   @prop()
-  coordinates!: string;
+  pins!: string;
   @prop()
   memo?: string;
   @arrayProp({ items: String, default: [] })
