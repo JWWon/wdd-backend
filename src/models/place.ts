@@ -38,6 +38,8 @@ export class Place extends Typegoose {
   officeHour!: string[];
   @arrayProp({ items: String })
   images?: string[];
+  @arrayProp({ items: String })
+  officeHour?: string[];
 
   @instanceMethod
   serialize(this: InstanceType<Place>) {

@@ -28,10 +28,7 @@ async function loadFeed(ctx: Context<null, null, { id: string }>, next: any) {
 const api = ({ Feed, Dog }: Model) => ({
   create: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
-    hasParams(
-      ['pins', 'seconds', 'distance', 'steps', 'pees', 'poos', 'images'],
-      body
-    );
+    hasParams(['seconds', 'distance', 'steps', 'pees', 'poos', 'images'], body);
     excludeParams(body, ['createdAt']);
     if (!ctx.user.repDog) {
       return ctx.badRequest('등록되어있는 댕댕이가 없습니다.');

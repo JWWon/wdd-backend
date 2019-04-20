@@ -3,7 +3,7 @@ import env from '../lib/env';
 
 module.exports = () => {
   mongoose
-    .connect(`mongodb://${env.DB_URL}/woodongdang`, {
+    .connect(`${env.DB_URL}/woodongdang`, {
       autoReconnect: true,
       useNewUrlParser: true,
       useCreateIndex: true,

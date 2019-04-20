@@ -1,5 +1,12 @@
 node_modules
-dist
-*.log
+npm-debug.log
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+# shell script
 ssh-connect.sh
-*.md

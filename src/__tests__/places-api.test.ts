@@ -53,10 +53,7 @@ export const generatePlace = () => ({
     '서울특별시 강북구 월계로 7 유창빌딩',
     '서울특별시 동대문구 답십리로 82-1',
   ])}`,
-  officeHour: {
-    default: '오전 8:00 ~ 오후 10:00',
-    weekend: '오전 10:00 ~ 오후 9:00',
-  },
+  officeHour: ['오전 8:00 ~ 오후 10:00'],
   icon: 'https://picsum.photos/400/400/?random',
   images: [
     'https://picsum.photos/800/800/?random',
@@ -135,7 +132,7 @@ describe('PATCH /places/:id', () => {
     const updatePlace = {
       name: '새로운 가게',
       rating: 5,
-      officeHour: { default: '24시간' },
+      officeHour: ['24시간 오픈'],
     };
     const res = await request(server.getInstance())
       .patch(`/places/${samplePlace._id}`)
