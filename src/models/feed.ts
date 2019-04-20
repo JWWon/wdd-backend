@@ -10,7 +10,7 @@ export class Feed extends Typegoose {
   @prop({ required: true, index: true })
   dog!: InstanceType<Dog>;
   @prop({ required: true })
-  pins!: string; // JSON.stringify()
+  coordinates!: string;
   @prop({ required: true, min: 0 })
   seconds!: number;
   @prop({ required: true, min: 0 })
