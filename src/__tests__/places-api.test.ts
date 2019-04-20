@@ -135,7 +135,7 @@ describe('PATCH /places/:id', () => {
     const updatePlace = {
       name: '새로운 가게',
       rating: 5,
-      officeHour: { default: '24시간' },
+      officeHour: ['24시간 오픈'],
     };
     const res = await request(server.getInstance())
       .patch(`/places/${samplePlace._id}`)

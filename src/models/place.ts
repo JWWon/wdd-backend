@@ -10,12 +10,6 @@ import {
   Typegoose,
 } from 'typegoose';
 
-interface OfficeHour {
-  default: string;
-  weekend?: string;
-  dayoff?: string;
-}
-
 @index({ location: '2dsphere' })
 export class Place extends Typegoose {
   @prop({ required: true })
@@ -35,8 +29,6 @@ export class Place extends Typegoose {
   @prop({ match: /(^0[0-9]{1,2}-)?[0-9]{3,4}-[0-9]{4}$/ })
   contact?: string;
   @prop()
-  officeHour?: OfficeHour;
-  @prop()
   icon?: string;
   @prop()
   description?: string;
@@ -44,6 +36,8 @@ export class Place extends Typegoose {
   scraps!: PureInstance<UserLike>[];
   @arrayProp({ items: String })
   images?: string[];
+  @arrayProp({ items: String })
+  officeHour?: string[];
 
   @instanceMethod
   serialize(this: InstanceType<Place>) {

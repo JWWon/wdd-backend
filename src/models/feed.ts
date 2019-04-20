@@ -9,8 +9,6 @@ export class Feed extends Typegoose {
   user!: Schema.Types.ObjectId;
   @prop({ required: true, index: true })
   dog!: InstanceType<Dog>;
-  @prop({ required: true })
-  coordinates!: string;
   @prop({ required: true, min: 0 })
   seconds!: number;
   @prop({ required: true, min: 0 })
@@ -23,6 +21,8 @@ export class Feed extends Typegoose {
   poos!: number;
   @prop({ default: Date.now })
   createdAt!: Date;
+  @prop()
+  coordinates!: string;
   @prop()
   memo?: string;
   @arrayProp({ items: String, default: [] })
