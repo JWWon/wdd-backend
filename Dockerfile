@@ -1,4 +1,5 @@
 FROM node:alpine
+MAINTAINER wonjiwn@naver.com
 
 # 앱 디렉토리 생성
 RUN mkdir -p /usr/src/app

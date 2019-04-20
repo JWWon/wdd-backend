@@ -25,7 +25,7 @@ export class Place extends Typegoose {
   @prop({ required: true })
   address!: string; // Road Address
   @prop({ default: '기타' })
-  label!: '카페' | '식당' | '병원' | '용품' | '술집' | '기타';
+  label!: '카페' | '식당' | '페스티벌' | '병원' | '용품' | '기타';
   @prop({ min: 0, max: 5, default: 0 })
   rating!: number;
   @prop({ index: true })
