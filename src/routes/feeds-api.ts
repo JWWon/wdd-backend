@@ -14,6 +14,7 @@ type Instance = PureInstance<Class>;
 interface Search {
   dogs?: string;
   feeds?: string;
+  length: string;
 }
 
 // middleware
@@ -90,6 +91,8 @@ const api = ({ Feed, Dog }: Model) => ({
     }
     const feeds: Instance[] = await Feed.find(query)
       .sort('-createdAt')
+      .skip(parseInt(q.length, 10))
+      .limit(5)
       .lean();
     return ctx.ok(feeds);
   },
