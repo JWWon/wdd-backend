@@ -78,6 +78,7 @@ const api = ({ Feed, Dog }: Model) => ({
   },
   get: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
+    // set query
     const query: { [key: string]: any } = {};
     if (q.dogs) {
       const dogs: string[] = JSON.parse(q.dogs);
@@ -89,11 +90,19 @@ const api = ({ Feed, Dog }: Model) => ({
       const feeds: string[] = JSON.parse(q.feeds);
       query._id = { $in: feeds.map(feed => mongoose.Types.ObjectId(feed)) };
     }
-    const feeds: Instance[] = await Feed.find(query)
-      .sort('-createdAt')
-      .skip(parseInt(q.length, 10))
-      .limit(5)
-      .lean();
+    // get response
+    let feeds: Instance[] = [];
+    if (q.length) {
+      feeds = await Feed.find(query)
+        .sort('-createdAt')
+        .skip(parseInt(q.length, 10))
+        .limit(5)
+        .lean();
+    } else {
+      feeds = await Feed.find(query)
+        .sort('-createdAt')
+        .lean();
+    }
     return ctx.ok(feeds);
   },
   delete: async (ctx: Context) => {
