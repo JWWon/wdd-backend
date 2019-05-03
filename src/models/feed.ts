@@ -1,8 +1,15 @@
 import { Schema } from 'mongoose';
-import { arrayProp, InstanceType, prop, Typegoose } from 'typegoose';
 import { PureInstance } from '../interfaces/model';
 import { Dog } from './dog';
 import { UserLike } from './schemas/user-like';
+import {
+  arrayProp,
+  InstanceType,
+  prop,
+  Typegoose,
+  staticMethod,
+  ModelType,
+} from 'typegoose';
 
 export class Feed extends Typegoose {
   @prop({ required: true, ref: 'User' })
@@ -29,6 +36,16 @@ export class Feed extends Typegoose {
   images!: string[];
   @arrayProp({ items: Object, default: [] })
   likes!: PureInstance<UserLike>[];
+
+  @staticMethod
+  static updateDog(this: ModelType<Feed>, dog: InstanceType<Dog>) {
+    this.updateMany(
+      { 'dog._id': dog._id },
+      { $set: { dog } },
+      {},
+      (err, res) => {}
+    );
+  }
 }
 
 const feedModel = new Feed().getModelForClass(Feed);

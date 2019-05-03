@@ -22,7 +22,7 @@ async function loadDog(ctx: Context<null, null, { id: string }>, next: any) {
   await next();
 }
 
-const api = ({ Dog, User }: Model) => ({
+const api = ({ Dog, User, Feed }: Model) => ({
   search: async (ctx: Context<null, Search>) => {
     const { query: q } = ctx.request;
     const query: { [key: string]: any } = {};
@@ -53,6 +53,7 @@ const api = ({ Dog, User }: Model) => ({
       validateBeforeSave: true,
     });
     await ctx.user.updateDog(updateDog);
+    await Feed.updateDog(updateDog);
     return ctx.ok(updateDog);
   },
   selectRep: async (ctx: Context) => {
