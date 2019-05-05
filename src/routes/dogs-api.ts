@@ -49,11 +49,13 @@ const api = ({ Dog, User, Feed }: Model) => ({
   update: async (ctx: Context<Instance>) => {
     const { body } = ctx.request;
     excludeParams(body, ['user']);
-    const updateDog = await Object.assign(ctx.state.dog, body).save({
-      validateBeforeSave: true,
-    });
+    const updateDog = Object.assign(ctx.state.dog, body);
+    await updateDog.save({ validateBeforeSave: true });
     await ctx.user.updateDog(updateDog);
-    await Feed.updateDog(updateDog);
+    await Feed.updateMany(
+      { 'dog._id': updateDog._id },
+      { $set: { dog: updateDog } }
+    );
     return ctx.ok(updateDog);
   },
   selectRep: async (ctx: Context) => {
