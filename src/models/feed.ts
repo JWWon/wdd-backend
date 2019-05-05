@@ -42,7 +42,6 @@ export class Feed extends Typegoose {
     this.updateMany(
       { 'dog._id': dog._id },
       { $set: { dog } },
-      {},
       (err, res) => {}
     );
   }
