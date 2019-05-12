@@ -96,7 +96,7 @@ const api = ({ User }: Model) => ({
   search: async (ctx: Context<null, Search>) => {
     const { query } = ctx.request;
     hasParams(['coordinates'], query);
-    query.range = query.range || '50';
+    query.range = query.range || '10';
     const users: Instance[] = await User.find({
       location: pickLocation(query),
       repDog: { $exists: true },
